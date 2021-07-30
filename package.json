@@ -4,12 +4,9 @@
   "description": "",
   "main": "./src/i_main.js",
   "scripts": {
-    "start": "electron ./src/i_main.js -4"
+    "start": "node ./src/i_main.js -4"
   },
   "keywords": [],
   "author": "Diego Segovia",
-  "license": "ISC",
-  "devDependencies": {
-    "electron": "^11.2.1"
-  }
+  "license": "ISC"
 }

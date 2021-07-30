@@ -1,5 +1,4 @@
 const I_InitGraphics = require('./i_video').I_InitGraphics
-const 
 const fs = require('fs')
 
 const standard_iwads = [
@@ -12,7 +11,7 @@ const standard_iwads = [
   'freedm.wad'
 ]
 
-const availableWADS = []
+let availableWADS = []
 
 let nomonsters = false
 let respawnparm = false

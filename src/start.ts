@@ -1,11 +1,8 @@
-const WADLoader = require('./wadLoader')
-
+import WADLoader from './wadLoader'
 
 //program init
 const wadLoader = new WADLoader('./DOOM.WAD')
 
 wadLoader.openAndLoad()
 wadLoader.readDirectories()
-
-console.log(wadLoader.wadHeader)
 

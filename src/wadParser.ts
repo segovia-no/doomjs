@@ -1,29 +1,31 @@
-module.exports = class WADParser {
+import { WADDirectory, WADHeader } from "./interfaces/wadLoader.interface"
 
-  readHeaderData(wadBuffer) {
+export default class WADParser {
+
+  readHeaderData(wadBuffer: Buffer):WADHeader {
     return {
       wadType: wadBuffer.toString('utf8', 0, 0x04),
       directoryEntries: wadBuffer.readUInt32LE(0x04),
-      directoryOffset: wadBuffer.readUInt32LE(0x08) 
+      directoryOffset: wadBuffer.readUInt32LE(0x08)
     }
   }
 
-  readDirectoryData(wadBuffer, directoryOffset) {
+  readDirectoryData(wadBuffer: Buffer, directoryOffset: number, dirIndex: number):WADDirectory {
     return {
-      lumpOffset: wadBuffer.readUInt32LE(directoryOffset + i*16),
-      lumpSize: wadBuffer.readUInt32LE(directoryOffset + i*16 + 4),
-      lumpName: wadBuffer.toString('utf8', directoryOffset + i*16 + 8, directoryOffset + i*16 + 16).replace(/\x00/g, "")
+      lumpOffset: wadBuffer.readUInt32LE(directoryOffset + dirIndex*16),
+      lumpSize: wadBuffer.readUInt32LE(directoryOffset + dirIndex*16 + 4),
+      lumpName: wadBuffer.toString('utf8', directoryOffset + dirIndex*16 + 8, directoryOffset + dirIndex*16 + 16).replace(/\x00/g, "")
     }
   }
 
-  readMapVertexData(wadBuffer, vertexOffset) {
+  readMapVertexData(wadBuffer: Buffer, vertexOffset: number) {
     return {
       xPos: wadBuffer.readUInt16LE(vertexOffset),
       yPos: wadBuffer.readUInt16LE(vertexOffset + 2) 
     }
   }
 
-  readMapLinedefData(wadBuffer, linedefOffset) {
+  readMapLinedefData(wadBuffer: Buffer, linedefOffset: number) {
     return {
       startVertex: wadBuffer.readUInt16LE(linedefOffset),
       endVertex: wadBuffer.readUInt16LE(linedefOffset + 2),

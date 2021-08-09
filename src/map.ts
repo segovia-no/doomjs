@@ -53,6 +53,8 @@ export default class Map {
   initAutomap(windowWidth: number, windowHeight: number): boolean {
     try {
 
+      this.automap_lines = []
+
       const automapStartX = windowWidth * (1 - this.automap_scaleFactor)
       const automapStartY = windowHeight * (1 - this.automap_scaleFactor)
       const automapEndX = windowWidth - (windowWidth * (1 - this.automap_scaleFactor))

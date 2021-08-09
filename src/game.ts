@@ -1,7 +1,5 @@
 import Engine from './engine'
 
-const SDL = require('@kmamal/sdl')
-
 export default class Game {
 
   #DoomEngine: Engine
@@ -21,8 +19,8 @@ export default class Game {
     }
   }
 
-  render(): void {
-    this.#DoomEngine.render()
+  initGameLoop(): void {
+    this.#DoomEngine.gameLoop()
   }
 
   update(): void {

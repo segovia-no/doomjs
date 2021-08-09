@@ -20,6 +20,11 @@ export default class Engine {
   #canvas: any
   #context: any
 
+  ticspersecond: number = 35
+  tickLength: number = 1000 / this.ticspersecond
+
+  #lastTic = Date.now()
+
   constructor(wadFilepath: string = './DOOM.WAD', mapName: string = 'E1M1') {
     this.#wadLoader = new WADLoader(wadFilepath)
     this.#map = new Map(mapName)
@@ -57,14 +62,43 @@ export default class Engine {
     }
   }
 
+  gameLoop() {
+
+    const now = Date.now()
+
+    if(this.#lastTic + this.tickLength <= now) {
+
+      this.#lastTic = now
+
+      this.update()
+      this.render()
+      
+    }
+
+    if(Date.now() - this.#lastTic < this.tickLength - 16) {
+      setTimeout(this.gameLoop.bind(this))
+    } else {
+      setImmediate(this.gameLoop.bind(this))
+    }
+
+  }
 
   render(): void {
+    this.clearScreen()
     this.#sdlWindow.render(this.#windowWidth, this.#windowHeight, this.#windowWidth*4, 'bgra32', this.#map.renderAutoMap(this.#context))
   }
 
   initInputsListeners(): void {
     this.#sdlWindow.on('keyDown', (ev: any) => {
-      console.log(ev)
+      switch(ev.key) {
+        case '+' :
+          this.#map.automap_scaleFactor = this.#map.automap_scaleFactor + 0.01
+          this.#map.initAutomap(this.#windowWidth, this.#windowHeight)
+          break
+        case '-':
+          this.#map.automap_scaleFactor = this.#map.automap_scaleFactor - 0.01
+          this.#map.initAutomap(this.#windowWidth, this.#windowHeight)
+      }
     })
 
   }
@@ -75,6 +109,11 @@ export default class Engine {
 
   update(): void {
 
+  }
+
+  clearScreen() {
+    this.#context.clearRect(0,0,this.#windowWidth, this.#windowHeight)
+    this.#sdlWindow.render(this.#windowWidth, this.#windowHeight, this.#windowWidth*4, 'bgra32', Buffer.alloc(this.#windowWidth*this.#windowHeight*4))
   }
 
   getRenderWidth(): number {

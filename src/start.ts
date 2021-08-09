@@ -16,10 +16,6 @@ import Game from './game'
 const game: Game = new Game('./DOOM.WAD', 'E1M1')
 game.init()
 
-// while(!game.isOver()) {
-  game.update()
-  game.render()
-  game.delay()
-// }
+game.initGameLoop()
 
 

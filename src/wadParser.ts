@@ -1,3 +1,4 @@
+import { Linedef, Vertex } from "./interfaces/map.interface"
 import { WADDirectory, WADHeader } from "./interfaces/wadLoader.interface"
 
 export default class WADParser {
@@ -18,22 +19,22 @@ export default class WADParser {
     }
   }
 
-  readMapVertexData(wadBuffer: Buffer, vertexOffset: number) {
+  readMapVertexData(wadBuffer: Buffer, vertexOffset: number): Vertex {
     return {
-      xPos: wadBuffer.readUInt16LE(vertexOffset),
-      yPos: wadBuffer.readUInt16LE(vertexOffset + 2) 
+      xPosition: wadBuffer.readInt16LE(vertexOffset),
+      yPosition: wadBuffer.readInt16LE(vertexOffset + 2)
     }
   }
 
-  readMapLinedefData(wadBuffer: Buffer, linedefOffset: number) {
+  readMapLinedefData(wadBuffer: Buffer, linedefOffset: number):Linedef {
     return {
       startVertex: wadBuffer.readUInt16LE(linedefOffset),
       endVertex: wadBuffer.readUInt16LE(linedefOffset + 2),
       flags: wadBuffer.readUInt16LE(linedefOffset + 4),
       lineType: wadBuffer.readUInt16LE(linedefOffset + 6),
       sectorTag: wadBuffer.readUInt16LE(linedefOffset + 8),
-      rightSidedef: wadBuffer.readUInt16LE(linedefOffset + 10),
-      leftSidedef: wadBuffer.readUInt16LE(linedefOffset + 12)
+      frontSidedef: wadBuffer.readUInt16LE(linedefOffset + 10),
+      backSidedef: wadBuffer.readUInt16LE(linedefOffset + 12)
     }
   }
 

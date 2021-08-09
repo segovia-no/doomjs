@@ -12,3 +12,10 @@ export interface Linedef {
   frontSidedef: number;
   backSidedef: number;
 }
+
+export interface AutomapLines {
+  vStart_xPos: number;
+  vStart_yPos: number;
+  vEnd_xPos: number;
+  vEnd_yPos: number;
+}

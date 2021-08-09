@@ -1,18 +1,25 @@
-import WADLoader from './wadLoader'
-import Map from './map'
+import Game from './game'
 
 //program init
-const wadLoader = new WADLoader('./DOOM.WAD')
+// const wadLoader = new WADLoader('./DOOM.WAD')
 
-wadLoader.loadWAD()
+// wadLoader.loadWAD()
 
-//new map
-let map: Map = new Map('E1M1')
-wadLoader.loadMapData(map)
+// //new map
+// let map: Map = new Map('E1M1')
+// wadLoader.loadMapData(map)
 
-map.printMapInfo()
-map.printHeadVertexes(5)
-map.printHeadLinedefs(5)
+// map.printMapInfo()
+// map.printHeadVertexes(5)
+// map.printHeadLinedefs(5)
 
+const game: Game = new Game('./DOOM.WAD', 'E1M1')
+game.init()
+
+// while(!game.isOver()) {
+  game.update()
+  game.render()
+  game.delay()
+// }
 
 

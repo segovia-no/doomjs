@@ -91,6 +91,8 @@ export default class WADLoader {
 
       if(!this.readMapLinedefs(map)) throw `Error: Failed to load linedefs of map ${map.getName()}`
 
+      if(!this.readMapThings(map)) throw `Error: Failed to load things of map ${map.getName()}`
+
       return true
 
     } catch (e) {
@@ -172,6 +174,22 @@ export default class WADLoader {
     for(let i = 0; i < linedefsCount; i++) {
       map.addLinedef( this.wadParser.readMapLinedefData(this.wadBuffer, this.wadDirectories[map.idx_LINEDEFS].lumpOffset + i*14) )
     }
+
+    return true
+
+  }
+
+  readMapThings(map: Map): boolean {
+
+    if(map.idx_THINGS == 0) return false
+
+    const thingsCount = this.wadDirectories[map.idx_THINGS].lumpSize / 10 // each thing is 10 bytes long
+
+    for(let i = 0; i < thingsCount; i++) {
+      map.addThing( this.wadParser.readMapThingData(this.wadBuffer, this.wadDirectories[map.idx_THINGS].lumpOffset + i*10))
+    }
+
+    if(!map.initThings()) return false
 
     return true
 

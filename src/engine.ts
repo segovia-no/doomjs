@@ -84,8 +84,19 @@ export default class Engine {
   }
 
   render(): void {
+
     this.clearScreen()
-    this.#sdlWindow.render(this.#windowWidth, this.#windowHeight, this.#windowWidth*4, 'bgra32', this.#map.renderAutoMap(this.#context))
+
+    //render pipeline
+    this.#map.renderAutoMapWalls(this.#context)
+    this.#map.renderAutoMapPlayer(this.#context)
+
+    //buffer conversion
+    const buffer = this.#context.canvas.toBuffer('raw')
+
+    //render buffer
+    this.#sdlWindow.render(this.#windowWidth, this.#windowHeight, this.#windowWidth*4, 'bgra32', buffer)
+
   }
 
   initInputsListeners(): void {
@@ -113,7 +124,7 @@ export default class Engine {
 
   clearScreen() {
     this.#context.clearRect(0,0,this.#windowWidth, this.#windowHeight)
-    this.#sdlWindow.render(this.#windowWidth, this.#windowHeight, this.#windowWidth*4, 'bgra32', Buffer.alloc(this.#windowWidth*this.#windowHeight*4))
+    //this.#sdlWindow.render(this.#windowWidth, this.#windowHeight, this.#windowWidth*4, 'bgra32', Buffer.alloc(this.#windowWidth*this.#windowHeight*4))
   }
 
   getRenderWidth(): number {

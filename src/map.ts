@@ -1,5 +1,9 @@
+import { Canvas } from 'canvas'
 import * as fs from 'fs'
-import { Linedef, Vertex, AutomapLines } from "./interfaces/map.interface"
+
+import { Linedef, Vertex, AutomapLines, Thing } from "./interfaces/map.interface"
+import Player from './player'
+
 import { scaleBetween } from './utils/math'
 
 export default class Map {
@@ -7,6 +11,10 @@ export default class Map {
   #m_Name: string = ''
   #m_Vertexes: Vertex[] = []
   #m_Linedefs: Linedef[] = []
+  #m_Things: Thing[] = []
+
+  //things
+  player1: Player = new Player(0,0,0)
 
   //indexes of directory
   idx_THINGS: number = 1
@@ -46,6 +54,29 @@ export default class Map {
     this.#m_Linedefs.push(linedef)
   }
 
+  addThing(thing: Thing): void {
+    this.#m_Things.push(thing)
+  }
+
+  initThings(): boolean {
+
+    if(this.#m_Things.length < 1) return false
+
+    this.#m_Things.forEach(thing => {
+
+      //player setup
+      switch(thing.type) {
+        case 1:
+          this.player1 = new Player(thing.xPosition, thing.yPosition, thing.angle, 1)
+          break
+      }
+
+    })
+
+    return true
+
+  }
+
   getName(): string {
     return this.#m_Name
   }
@@ -82,9 +113,9 @@ export default class Map {
     }
   }
 
-  renderAutoMap(canvasCtx: any) {
+  renderAutoMapWalls(canvasCtx: any): void {
 
-    canvasCtx.strokeStyle = '#ff0000'
+    canvasCtx.strokeStyle = '#ffffff'
 
     this.automap_lines.forEach(line => {
       canvasCtx.beginPath()
@@ -94,7 +125,24 @@ export default class Map {
       canvasCtx.stroke()
     })
 
-    return canvasCtx.canvas.toBuffer('raw')
+  }
+
+  renderAutoMapPlayer(canvasCtx: any): void {
+
+    const automapStartX = canvasCtx.canvas.width * (1 - this.automap_scaleFactor)
+    const automapStartY = canvasCtx.canvas.height * (1 - this.automap_scaleFactor)
+    const automapEndX = canvasCtx.canvas.width - (canvasCtx.canvas.width * (1 - this.automap_scaleFactor))
+    const automapEndY = canvasCtx.canvas.height - (canvasCtx.canvas.height * (1 - this.automap_scaleFactor))
+
+    const playerXpos = scaleBetween(this.player1.getXPosition(), automapStartX, automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+    const playerYpos = canvasCtx.canvas.height - scaleBetween(this.player1.getYPosition(), automapStartY, automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+
+    const radius = 5 - (5 * (1 - this.automap_scaleFactor))
+
+    canvasCtx.beginPath()
+    canvasCtx.arc(playerXpos, playerYpos, radius, 0, 2*Math.PI)
+    canvasCtx.fillStyle = '#ff0000'
+    canvasCtx.fill()
 
   }
 
@@ -109,16 +157,32 @@ export default class Map {
 
   }
 
-  printHeadVertexes(amount: number): void {
+  printVertexes(amount: number): void {
+
+    console.log(`Total of Vertexes: ${this.#m_Vertexes.length} | shown: ${amount}\n`)
+    
     for(let i = 0; i < amount; i++) {
       console.log(`Vertex ${i} | x: ${this.#m_Vertexes[i].xPosition} | y: ${this.#m_Vertexes[i].yPosition}`)
     }
     console.log('')
   }
 
-  printHeadLinedefs(amount: number): void {
+  printLinedefs(amount: number): void {
+
+    console.log(`Total of Linedefs: ${this.#m_Linedefs.length} | shown: ${amount}\n`)
+
     for(let i = 0; i < amount; i++) {
       console.log(`Linedef ${i} | startVertex: ${this.#m_Linedefs[i].startVertex} | endVertex: ${this.#m_Linedefs[i].endVertex} | flags: ${this.#m_Linedefs[i].flags} | linetype: ${this.#m_Linedefs[i].lineType} | sector tag: ${this.#m_Linedefs[i].sectorTag} | front sidedef: ${this.#m_Linedefs[i].frontSidedef} | back sidedef: ${this.#m_Linedefs[i].backSidedef}`)
+    }
+    console.log('')
+  }
+
+  printThings(amount: number): void {
+
+    console.log(`Total of Things: ${this.#m_Things.length} | shown: ${amount}\n`)
+
+    for(let i = 0; i < amount; i++) {
+      console.log(`Thing ${i} | xPos: ${this.#m_Things[i].xPosition} | yPos: ${this.#m_Things[i].yPosition} | angle: ${this.#m_Things[i].angle} | type: ${this.#m_Things[i].type} | flags: ${this.#m_Things[i].flags}`)
     }
     console.log('')
   }
@@ -150,10 +214,30 @@ export default class Map {
         fs.unlinkSync(filename)
       }
 
-      fs.appendFileSync(filename, `Automap lines from map ${this.#m_Name} in (startX,startY,endX,endY) format\n`)
+      fs.appendFileSync(filename, `Automap lines from map ${this.#m_Name} in "startX,startY,endX,endY" format\n`)
 
       this.automap_lines.forEach(line => {
-        fs.appendFileSync(filename, `(${line.vStart_xPos}, ${line.vStart_yPos}, ${line.vEnd_xPos}, ${line.vEnd_yPos})\n`)
+        fs.appendFileSync(filename, `${line.vStart_xPos}, ${line.vStart_yPos}, ${line.vEnd_xPos}, ${line.vEnd_yPos}\n`)
+      })
+
+      console.log(`Automap lines from map ${this.#m_Name} dumped into ${filename}`)
+
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  dumpThingsToFile(filename: string): void {
+    try {
+
+      if(fs.existsSync(filename)) {
+        fs.unlinkSync(filename)
+      }
+
+      fs.appendFileSync(filename, `Things from map ${this.#m_Name} in "xPos,yPos,angle,type,flags" format\n`)
+
+      this.#m_Things.forEach(thing => {
+        fs.appendFileSync(filename, `${thing.xPosition}, ${thing.yPosition}, ${thing.angle}, ${thing.type}, ${thing.flags}`)
       })
 
       console.log(`Automap lines from map ${this.#m_Name} dumped into ${filename}`)

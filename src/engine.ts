@@ -7,8 +7,8 @@ import { createCanvas } from 'canvas'
 export default class Engine {
 
   // props
-  #windowWidth: number = 640
-  #windowHeight: number = 480
+  #windowWidth: number = 800
+  #windowHeight: number = 600
   #windowTitle: string = 'DOOM.js'
 
   isOver: boolean = false

@@ -1,4 +1,3 @@
-import { Canvas } from 'canvas'
 import * as fs from 'fs'
 
 import { Linedef, Vertex, AutomapLines, Thing } from "./interfaces/map.interface"

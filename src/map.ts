@@ -5,6 +5,8 @@ import Player from './player'
 
 import { scaleBetween } from './utils/math'
 
+const SUBSECTORIDENTIFIER: number = 0x8000
+
 export default class Map {
 
   #m_Name: string = ''
@@ -12,6 +14,9 @@ export default class Map {
   #m_Linedefs: Linedef[] = []
   #m_Things: Thing[] = []
   #m_Nodes: Node[] = []
+
+  //engine
+  #context: any
 
   //things
   player1: Player = new Player(0,0,0)
@@ -40,9 +45,24 @@ export default class Map {
   vertexes_Xmax: number = -32768
   vertexes_Ymin: number = 32767
   vertexes_Ymax: number = -32768
+
+  //bsp tree
+  renderCurrentBSPNode: boolean = false
+  #debugBSPTraverse: boolean = false
+  #debugBSPPath: number[] = []
+  #debugBSPZoomDepth: number = 0
   
   constructor(mapName: string) {
     this.#m_Name = mapName
+  }
+
+  setContext(context: any): boolean {
+
+    if(!context.canvas.height) return false
+
+    this.#context = context
+    return true
+
   }
 
   addVertex(vertex: Vertex): void {
@@ -122,58 +142,133 @@ export default class Map {
     }
   }
 
-  renderAutoMapWalls(canvasCtx: any): void {
+  renderAutoMapWalls(): void {
 
-    canvasCtx.strokeStyle = '#ffffff'
+    this.#context.strokeStyle = '#ffffff'
 
     this.automap_lines.forEach(line => {
-      canvasCtx.beginPath()
-      canvasCtx.moveTo(line.vStart_xPos, line.vStart_yPos)
-      canvasCtx.lineTo(line.vEnd_xPos, line.vEnd_yPos)
-      canvasCtx.closePath()
-      canvasCtx.stroke()
+      this.#context.beginPath()
+      this.#context.moveTo(line.vStart_xPos, line.vStart_yPos)
+      this.#context.lineTo(line.vEnd_xPos, line.vEnd_yPos)
+      this.#context.closePath()
+      this.#context.stroke()
     })
 
   }
 
-  renderAutoMapPlayer(canvasCtx: any): void {
+  renderAutoMapPlayer(): void {
 
     const playerXpos = scaleBetween(this.player1.getXPosition(), this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const playerYpos = canvasCtx.canvas.height - scaleBetween(this.player1.getYPosition(), this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const playerYpos = this.#context.canvas.height - scaleBetween(this.player1.getYPosition(), this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
 
     const radius = 5 - (5 * (1 - this.automap_scaleFactor))
 
-    canvasCtx.beginPath()
-    canvasCtx.arc(playerXpos, playerYpos, radius, 0, 2*Math.PI)
-    canvasCtx.fillStyle = '#ff0000'
-    canvasCtx.fill()
+    this.#context.beginPath()
+    this.#context.arc(playerXpos, playerYpos, radius, 0, 2*Math.PI)
+    this.#context.fillStyle = '#ff0000'
+    this.#context.fill()
 
   }
 
-  renderAutoMapNode(canvasCtx: any): void {
+  renderAutoMapNode(nodeIdx: number): void {
 
     if(this.#m_Nodes.length < 1) return
 
-    const lastNode = this.#m_Nodes[this.#m_Nodes.length - 1]
+    const node = this.#m_Nodes[nodeIdx]
 
-    const rightBoxLeft = scaleBetween(lastNode.rightBoxLeft, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const rightBoxTop = canvasCtx.canvas.height - scaleBetween(lastNode.rightBoxTop, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
-    const rightBoxRight = scaleBetween(lastNode.rightBoxRight, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const rightBoxBottom = canvasCtx.canvas.height - scaleBetween(lastNode.rightBoxBottom, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const rightBoxLeft = scaleBetween(node.rightBoxLeft, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+    const rightBoxTop = this.#context.canvas.height - scaleBetween(node.rightBoxTop, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const rightBoxRight = scaleBetween(node.rightBoxRight, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+    const rightBoxBottom = this.#context.canvas.height - scaleBetween(node.rightBoxBottom, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
 
-    const leftBoxLeft = scaleBetween(lastNode.leftBoxLeft, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const leftBoxTop = canvasCtx.canvas.height - scaleBetween(lastNode.leftBoxTop, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
-    const leftBoxRight = scaleBetween(lastNode.leftBoxRight, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const leftBoxBottom = canvasCtx.canvas.height - scaleBetween(lastNode.leftBoxBottom, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const leftBoxLeft = scaleBetween(node.leftBoxLeft, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+    const leftBoxTop = this.#context.canvas.height - scaleBetween(node.leftBoxTop, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const leftBoxRight = scaleBetween(node.leftBoxRight, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+    const leftBoxBottom = this.#context.canvas.height - scaleBetween(node.leftBoxBottom, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
 
-    canvasCtx.strokeStyle = '#ff0000'
-    canvasCtx.strokeRect(rightBoxLeft, rightBoxTop, rightBoxRight - rightBoxLeft, rightBoxBottom - rightBoxTop)
+    this.#context.strokeStyle = '#ff0000'
+    this.#context.strokeRect(rightBoxLeft, rightBoxTop, rightBoxRight - rightBoxLeft, rightBoxBottom - rightBoxTop)
 
-    canvasCtx.strokeStyle = '#0000ff'
-    canvasCtx.strokeRect(leftBoxLeft, leftBoxTop, leftBoxRight - leftBoxLeft, leftBoxBottom - leftBoxTop)
+    this.#context.strokeStyle = '#00ff00'
+    this.#context.strokeRect(leftBoxLeft, leftBoxTop, leftBoxRight - leftBoxLeft, leftBoxBottom - leftBoxTop)
 
-    canvasCtx.strokeStyle = '#ffffff' //clear style
+    this.#context.strokeStyle = '#ffffff' //clear style
 
+  }
+
+  isPointOnLeftSide(xPos: number, yPos: number, nodeIdx: number): boolean {
+
+    const dx = xPos - this.#m_Nodes[nodeIdx].xPartition
+    const dy = yPos - this.#m_Nodes[nodeIdx].yPartition
+
+    return (((dx * this.#m_Nodes[nodeIdx].changeYPartition) - (dy * this.#m_Nodes[nodeIdx].changeXPartition)) <= 0)
+
+  }
+
+  renderBSPTree(): void {
+    this.traverseBSPNode(this.#m_Nodes.length - 1)
+  }
+
+  traverseBSPNode(nodeIdx: number, debugDepthIdx: number = 0): void {
+
+    if(nodeIdx & SUBSECTORIDENTIFIER) {
+      this.renderSubSector(nodeIdx & ~SUBSECTORIDENTIFIER)
+      return
+    }
+
+    if(this.#debugBSPTraverse) {
+
+      this.#debugBSPPath[debugDepthIdx] = nodeIdx
+
+      if(nodeIdx & SUBSECTORIDENTIFIER) { //if this is the last node, "end" the array
+        this.#debugBSPPath.slice(debugDepthIdx + 1)
+      }
+
+      if(this.#debugBSPPath[this.#debugBSPZoomDepth] === nodeIdx) {
+        this.renderAutoMapNode(nodeIdx)
+      }
+
+    }
+
+    const isOnLeft = this.isPointOnLeftSide(this.player1.getXPosition(), this.player1.getYPosition(), nodeIdx)
+
+    if(isOnLeft) {
+      this.traverseBSPNode(this.#m_Nodes[nodeIdx].leftChildIdx, debugDepthIdx + 1)
+    } else {
+      this.traverseBSPNode(this.#m_Nodes[nodeIdx].rightChildIdx, debugDepthIdx + 1)
+    }
+
+  }
+
+  renderSubSector(nodeIdx: number): void {
+    return
+  }
+
+  //Options
+  zoomAutomap(zoomIn: boolean): void {
+    if(zoomIn) {
+      this.automap_scaleFactor += 0.01
+    } else {
+      this.automap_scaleFactor -= 0.01
+    }
+  }
+
+  toggleDebugBSPTraverse(): void {
+    this.#debugBSPTraverse = !this.#debugBSPTraverse
+  }
+
+  zoomBSPTraverseDepth(zoomIn: boolean): void {
+    if(zoomIn) {
+
+      if(!this.#debugBSPPath[this.#debugBSPZoomDepth +1]) return
+      this.#debugBSPZoomDepth++
+
+    } else {
+
+      if(this.#debugBSPZoomDepth === 0) return
+      this.#debugBSPZoomDepth--
+      
+    }
   }
 
   //Info

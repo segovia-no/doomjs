@@ -14,7 +14,7 @@ export default class Engine {
   isOver: boolean = false
 
   #wadLoader: WADLoader
-  #map: Map
+  map: Map
 
   #sdlWindow: any
   #canvas: any
@@ -27,7 +27,7 @@ export default class Engine {
 
   constructor(wadFilepath: string = './DOOM.WAD', mapName: string = 'E1M1') {
     this.#wadLoader = new WADLoader(wadFilepath)
-    this.#map = new Map(mapName)
+    this.map = new Map(mapName)
   }
 
 
@@ -49,10 +49,13 @@ export default class Engine {
       this.#canvas = createCanvas(this.#windowWidth, this.#windowHeight)
       this.#context = this.#canvas.getContext('2d')
 
+      //pass renderer to map
+      if(!this.map.setContext(this.#context)) throw 'Error: could not set graphics context for map'
+
       //load data
       if(!this.#wadLoader.loadWAD()) throw 'Error: could not load the WAD file'
-      if(!this.#wadLoader.loadMapData(this.#map)) throw 'Error: could not load the map data'
-      if(!this.#map.initAutomap(this.#windowWidth, this.#windowHeight)) throw `Error: Failed to initialize automap of map ${this.#map.getName()}`
+      if(!this.#wadLoader.loadMapData(this.map)) throw 'Error: could not load the map data'
+      if(!this.map.initAutomap(this.#windowWidth, this.#windowHeight)) throw `Error: Failed to initialize automap of map ${this.map.getName()}`
 
       return true
 
@@ -88,9 +91,9 @@ export default class Engine {
     this.clearScreen()
 
     //render pipeline
-    this.#map.renderAutoMapWalls(this.#context)
-    this.#map.renderAutoMapPlayer(this.#context)
-    this.#map.renderAutoMapNode(this.#context)
+    this.map.renderAutoMapWalls()
+    this.map.renderAutoMapPlayer()
+    this.map.renderBSPTree()
 
     //buffer conversion
     const buffer = this.#context.canvas.toBuffer('raw')
@@ -104,12 +107,22 @@ export default class Engine {
     this.#sdlWindow.on('keyDown', (ev: any) => {
       switch(ev.key) {
         case '+' :
-          this.#map.automap_scaleFactor = this.#map.automap_scaleFactor + 0.01
-          this.#map.initAutomap(this.#windowWidth, this.#windowHeight)
+          this.map.zoomAutomap(true)
+          this.map.initAutomap(this.#windowWidth, this.#windowHeight)
           break
         case '-':
-          this.#map.automap_scaleFactor = this.#map.automap_scaleFactor - 0.01
-          this.#map.initAutomap(this.#windowWidth, this.#windowHeight)
+          this.map.zoomAutomap(false)
+          this.map.initAutomap(this.#windowWidth, this.#windowHeight)
+          break
+        case '.':
+          this.map.toggleDebugBSPTraverse()
+          break
+        case '1':
+          this.map.zoomBSPTraverseDepth(true)
+          break
+        case '0':
+          this.map.zoomBSPTraverseDepth(false)
+          break
       }
     })
 

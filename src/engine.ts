@@ -90,6 +90,7 @@ export default class Engine {
     //render pipeline
     this.#map.renderAutoMapWalls(this.#context)
     this.#map.renderAutoMapPlayer(this.#context)
+    this.#map.renderAutoMapNode(this.#context)
 
     //buffer conversion
     const buffer = this.#context.canvas.toBuffer('raw')

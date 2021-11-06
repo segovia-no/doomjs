@@ -1,4 +1,4 @@
-import { Linedef, Vertex, Thing } from "./interfaces/map.interface"
+import { Linedef, Vertex, Thing, Node } from "./interfaces/map.interface"
 import { WADDirectory, WADHeader } from "./interfaces/wadLoader.interface"
 
 export default class WADParser {
@@ -48,5 +48,23 @@ export default class WADParser {
     }
   }
 
+  readMapNodeData(wadBuffer: Buffer, nodeOffset: number): Node {
+    return {
+      xPartition: wadBuffer.readInt16LE(nodeOffset),
+      yPartition: wadBuffer.readInt16LE(nodeOffset + 2),
+      changeXPartition: wadBuffer.readInt16LE(nodeOffset + 4),
+      changeYPartition: wadBuffer.readInt16LE(nodeOffset + 6),
+      rightBoxTop: wadBuffer.readInt16LE(nodeOffset + 8),
+      rightBoxBottom: wadBuffer.readInt16LE(nodeOffset + 10),
+      rightBoxLeft: wadBuffer.readInt16LE(nodeOffset + 12),
+      rightBoxRight: wadBuffer.readInt16LE(nodeOffset + 14),
+      leftBoxTop: wadBuffer.readInt16LE(nodeOffset + 16),
+      leftBoxBottom: wadBuffer.readInt16LE(nodeOffset + 18),
+      leftBoxLeft: wadBuffer.readInt16LE(nodeOffset + 20),
+      leftBoxRight: wadBuffer.readInt16LE(nodeOffset + 22),
+      rightChildIdx: wadBuffer.readUInt16LE(nodeOffset + 24),
+      leftChildIdx: wadBuffer.readUInt16LE(nodeOffset + 26)
+    }
+  }
 
 }

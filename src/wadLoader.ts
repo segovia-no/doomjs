@@ -93,6 +93,8 @@ export default class WADLoader {
 
       if(!this.readMapThings(map)) throw `Error: Failed to load things of map ${map.getName()}`
 
+      if(!this.readMapNodes(map)) throw `Error: Failed to load nodes of map ${map.getName()}`
+
       return true
 
     } catch (e) {
@@ -190,6 +192,20 @@ export default class WADLoader {
     }
 
     if(!map.initThings()) return false
+
+    return true
+
+  }
+
+  readMapNodes(map: Map): boolean {
+
+    if(map.idx_NODES == 0) return false
+
+    const nodesCount = this.wadDirectories[map.idx_NODES].lumpSize / 28 // each node is 28 bytes long
+
+    for(let i = 0; i < nodesCount; i++) {
+      map.addNode( this.wadParser.readMapNodeData(this.wadBuffer, this.wadDirectories[map.idx_NODES].lumpOffset + i*28))
+    }
 
     return true
 

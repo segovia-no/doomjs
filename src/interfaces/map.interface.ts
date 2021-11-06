@@ -65,3 +65,39 @@ export interface Thing {
   type: number;
   flags: number;
 }
+
+/**
+ * Node Interface
+ *
+ * @interface Node
+ * @property {number} xPartition The splitter partition line x coordinate (signed short - 2 bytes)
+ * @property {number} yPartition The splitter partition line y coordinate (signed short - 2 bytes)
+ * @property {number} changeXPartition Change in x to end of partition line (signed short - 2 bytes)
+ * @property {number} changeYPartition Change in y to end of partition line (signed short - 2 bytes)
+ * @property {number} rightBoxTop First corner of right box - y coord (signed short - 2 bytes)
+ * @property {number} rightBoxBottom Second corner of right box - y coord (signed short - 2 bytes)
+ * @property {number} rightBoxLeft First corner of right box - x coord (signed short - 2 bytes)
+ * @property {number} rightBoxRight Second corner of right box - x coord (signed short - 2 bytes)
+ * @property {number} leftBoxTop First corner of left box - y coord (signed short - 2 bytes)
+ * @property {number} leftBoxBottom Second corner of left box - y coord (signed short - 2 bytes)
+ * @property {number} leftBoxLeft First corner of left box - x coord (signed short - 2 bytes)
+ * @property {number} leftBoxRight Second corner of left box - x coord (signed short - 2 bytes)
+ * @property {number} rightChildIdx Index of the right child and sub-sector indicator (signed short - 2 bytes)
+ * @property {number} leftChildIdx Index of the left child and sub-sector indicator (signed short - 2 bytes)
+ */
+export interface Node {
+  xPartition: number;
+  yPartition: number;
+  changeXPartition: number;
+  changeYPartition: number;
+  rightBoxTop: number;
+  rightBoxBottom: number;
+  rightBoxLeft: number;
+  rightBoxRight: number;
+  leftBoxTop: number;
+  leftBoxBottom: number;
+  leftBoxLeft: number;
+  leftBoxRight: number;
+  rightChildIdx: number;
+  leftChildIdx: number;
+}

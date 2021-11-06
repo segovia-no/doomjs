@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 
-import { Linedef, Vertex, AutomapLines, Thing } from "./interfaces/map.interface"
+import { Linedef, Vertex, AutomapLines, Thing, Node } from "./interfaces/map.interface"
 import Player from './player'
 
 import { scaleBetween } from './utils/math'
@@ -11,6 +11,7 @@ export default class Map {
   #m_Vertexes: Vertex[] = []
   #m_Linedefs: Linedef[] = []
   #m_Things: Thing[] = []
+  #m_Nodes: Node[] = []
 
   //things
   player1: Player = new Player(0,0,0)
@@ -29,6 +30,11 @@ export default class Map {
 
   //automap
   automap_scaleFactor: number = 0.9
+  #automapStartX: number = 0
+  #automapStartY: number = 0
+  #automapEndX: number = 0
+  #automapEndY: number = 0
+
   automap_lines: AutomapLines[] = []
   vertexes_Xmin: number = 32767
   vertexes_Xmax: number = -32768
@@ -55,6 +61,10 @@ export default class Map {
 
   addThing(thing: Thing): void {
     this.#m_Things.push(thing)
+  }
+
+  addNode(node: Node): void {
+    this.#m_Nodes.push(node)
   }
 
   initThings(): boolean {
@@ -85,10 +95,10 @@ export default class Map {
 
       this.automap_lines = []
 
-      const automapStartX = windowWidth * (1 - this.automap_scaleFactor)
-      const automapStartY = windowHeight * (1 - this.automap_scaleFactor)
-      const automapEndX = windowWidth - (windowWidth * (1 - this.automap_scaleFactor))
-      const automapEndY = windowHeight - (windowHeight * (1 - this.automap_scaleFactor))
+      this.#automapStartX = windowWidth * (1 - this.automap_scaleFactor)
+      this.#automapStartY = windowHeight * (1 - this.automap_scaleFactor)
+      this.#automapEndX = windowWidth - (windowWidth * (1 - this.automap_scaleFactor))
+      this.#automapEndY = windowHeight - (windowHeight * (1 - this.automap_scaleFactor))
     
       this.#m_Linedefs.forEach(linedef => {
 
@@ -96,10 +106,10 @@ export default class Map {
         const vEnd: Vertex = this.#m_Vertexes[linedef.endVertex]
 
         this.automap_lines.push({
-          vStart_xPos: scaleBetween(vStart.xPosition, automapStartX, automapEndX, this.vertexes_Xmin, this.vertexes_Xmax),
-          vStart_yPos: windowHeight - scaleBetween(vStart.yPosition, automapStartY, automapEndY, this.vertexes_Ymin, this.vertexes_Ymax),
-          vEnd_xPos: scaleBetween(vEnd.xPosition , automapStartX, automapEndX, this.vertexes_Xmin, this.vertexes_Xmax),
-          vEnd_yPos: windowHeight - scaleBetween(vEnd.yPosition, automapStartY, automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+          vStart_xPos: scaleBetween(vStart.xPosition, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax),
+          vStart_yPos: windowHeight - scaleBetween(vStart.yPosition, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax),
+          vEnd_xPos: scaleBetween(vEnd.xPosition , this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax),
+          vEnd_yPos: windowHeight - scaleBetween(vEnd.yPosition, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
         })
 
       })
@@ -128,13 +138,8 @@ export default class Map {
 
   renderAutoMapPlayer(canvasCtx: any): void {
 
-    const automapStartX = canvasCtx.canvas.width * (1 - this.automap_scaleFactor)
-    const automapStartY = canvasCtx.canvas.height * (1 - this.automap_scaleFactor)
-    const automapEndX = canvasCtx.canvas.width - (canvasCtx.canvas.width * (1 - this.automap_scaleFactor))
-    const automapEndY = canvasCtx.canvas.height - (canvasCtx.canvas.height * (1 - this.automap_scaleFactor))
-
-    const playerXpos = scaleBetween(this.player1.getXPosition(), automapStartX, automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const playerYpos = canvasCtx.canvas.height - scaleBetween(this.player1.getYPosition(), automapStartY, automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const playerXpos = scaleBetween(this.player1.getXPosition(), this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+    const playerYpos = canvasCtx.canvas.height - scaleBetween(this.player1.getYPosition(), this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
 
     const radius = 5 - (5 * (1 - this.automap_scaleFactor))
 
@@ -142,6 +147,32 @@ export default class Map {
     canvasCtx.arc(playerXpos, playerYpos, radius, 0, 2*Math.PI)
     canvasCtx.fillStyle = '#ff0000'
     canvasCtx.fill()
+
+  }
+
+  renderAutoMapNode(canvasCtx: any): void {
+
+    if(this.#m_Nodes.length < 1) return
+
+    const lastNode = this.#m_Nodes[this.#m_Nodes.length - 1]
+
+    const rightBoxLeft = scaleBetween(lastNode.rightBoxLeft, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+    const rightBoxTop = canvasCtx.canvas.height - scaleBetween(lastNode.rightBoxTop, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const rightBoxRight = scaleBetween(lastNode.rightBoxRight, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+    const rightBoxBottom = canvasCtx.canvas.height - scaleBetween(lastNode.rightBoxBottom, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+
+    const leftBoxLeft = scaleBetween(lastNode.leftBoxLeft, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+    const leftBoxTop = canvasCtx.canvas.height - scaleBetween(lastNode.leftBoxTop, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const leftBoxRight = scaleBetween(lastNode.leftBoxRight, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+    const leftBoxBottom = canvasCtx.canvas.height - scaleBetween(lastNode.leftBoxBottom, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+
+    canvasCtx.strokeStyle = '#ff0000'
+    canvasCtx.strokeRect(rightBoxLeft, rightBoxTop, rightBoxRight - rightBoxLeft, rightBoxBottom - rightBoxTop)
+
+    canvasCtx.strokeStyle = '#0000ff'
+    canvasCtx.strokeRect(leftBoxLeft, leftBoxTop, leftBoxRight - leftBoxLeft, leftBoxBottom - leftBoxTop)
+
+    canvasCtx.strokeStyle = '#ffffff' //clear style
 
   }
 

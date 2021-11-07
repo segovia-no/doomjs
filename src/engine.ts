@@ -24,7 +24,6 @@ export default class Engine {
   tickLength: number = 1000 / this.ticspersecond
 
   #lastTic = Date.now()
-  #ticCount = 0
 
   constructor(wadFilepath: string = './DOOM.WAD', mapName: string = 'E1M1') {
     this.#wadLoader = new WADLoader(wadFilepath)
@@ -73,7 +72,6 @@ export default class Engine {
     if(this.#lastTic + this.tickLength <= now) {
 
       this.#lastTic = now
-      this.#ticCount++
 
       this.update()
       this.render()
@@ -125,6 +123,12 @@ export default class Engine {
           break
         case '2':
           this.map.toggleDebugSSectorAnimation()
+          break
+        case 'left':
+          this.map.player1.rotateLeft()
+          break
+        case 'right':
+          this.map.player1.rotateRight()
           break
       }
     })

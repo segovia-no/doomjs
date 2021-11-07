@@ -1,8 +1,6 @@
-import { Console } from 'console'
-import * as fs from 'fs'
-
 import { Linedef, Vertex, AutomapLines, Thing, Node, SubSector, Seg } from "./interfaces/map.interface"
 import Player from './player'
+import { dumpMapLumpDataToFile, logMapLumpData } from './utils/log'
 
 import { scaleBetween } from './utils/math'
 
@@ -56,7 +54,7 @@ export default class Map {
   #debugBSPZoomDepth: number = 0
 
   //Sectors
-  #debugSSectorAnimation: boolean = false
+  #debugSSectorAnimation: number = 0
   #ssectorAnimationTick: number = 0
   #ssectorAnimationIdx: number = 0
   #ssectorAnimationStepIdx: any[] = []
@@ -165,13 +163,14 @@ export default class Map {
     this.renderAutoMapWalls()
     this.renderAutoMapPlayer()
     this.renderBSPTree()
-    this.animateRenderSectors()
+    this.renderSegsInFOV()
+    this.animateRenderSSegs()
 
   }
 
   renderAutoMapWalls(): void {
 
-    if(this.#debugSSectorAnimation) return
+    if(this.#debugSSectorAnimation !== 0) return
 
     this.#context.strokeStyle = '#ffffff'
 
@@ -232,15 +231,17 @@ export default class Map {
 
   traverseBSPNode(nodeIdx: number, debugDepthIdx: number = 0): void {
 
+    //render player subsector
     if(nodeIdx & SUBSECTORIDENTIFIER) {
 
-      if(this.#debugSSectorAnimation) return
+      if(this.#debugSSectorAnimation !== 0) return
 
-      this.renderSubSector(nodeIdx & ~SUBSECTORIDENTIFIER)
+      this.renderSegsFromSubSector(nodeIdx & ~SUBSECTORIDENTIFIER)
       return
 
     }
 
+    //render bsp node childs
     if(this.#debugBSPTraverse) {
 
       this.#debugBSPPath[debugDepthIdx] = nodeIdx
@@ -255,6 +256,7 @@ export default class Map {
 
     }
 
+    //recursion
     const isOnLeft = this.isPointOnLeftSide(this.player1.getXPosition(), this.player1.getYPosition(), nodeIdx)
 
     if(isOnLeft) {
@@ -265,24 +267,58 @@ export default class Map {
 
   }
 
-  //Sectors
-  renderSubSector(subsectorId: number, color: string = 'ff0000'): void {
+  //Sectors, Subsectors, Segs
+  renderSeg(seg: Seg, color: string = 'ff0000'): void {
+
+    const vStart: Vertex = this.#m_Vertexes[seg.startVertex]
+    const vEnd: Vertex = this.#m_Vertexes[seg.endVertex]
+
+    const startX = this.remapXToScreen(vStart.xPosition)
+    const startY = this.remapYToScreen(vStart.yPosition)
+    const endX   = this.remapXToScreen(vEnd.xPosition)
+    const endY   = this.remapYToScreen(vEnd.yPosition)
+
+    this.#context.strokeStyle = color
+
+    this.#context.beginPath()
+    this.#context.moveTo(startX, startY)
+    this.#context.lineTo(endX, endY)
+    this.#context.closePath()
+    this.#context.stroke()
+
+    this.#context.strokeStyle = '#ffffff'
+
+  }
+
+  renderSegsFromSubSector(subsectorId: number, color: string = 'ff0000'): void {
+
+    if(this.#debugSSectorAnimation !== 1) return
   
     const sector = this.#m_SSectors[subsectorId]
 
     for(let i = 0; i < sector.segCount; i++) {
+      this.renderSeg(this.#m_Segs[sector.firstSegIdx + i], color)
+    }
 
-      const seg = this.#m_Segs[sector.firstSegIdx + i]
+  }
 
-      const vStart = this.#m_Vertexes[seg.startVertex]
-      const vEnd   = this.#m_Vertexes[seg.endVertex]
+  renderSegsInFOV() {
+
+    if(this.#debugSSectorAnimation !== 3) return
+
+    for(let i = 0; i < this.#m_Segs.length; i++) {
+
+      const vStart = this.#m_Vertexes[this.#m_Segs[i].startVertex]
+      const vEnd   = this.#m_Vertexes[this.#m_Segs[i].endVertex]
+
+      if(!this.player1.clipVertexesInFOV(vStart, vEnd)) continue
 
       const startX = this.remapXToScreen(vStart.xPosition)
       const startY = this.remapYToScreen(vStart.yPosition)
       const endX   = this.remapXToScreen(vEnd.xPosition)
       const endY   = this.remapYToScreen(vEnd.yPosition)
 
-      this.#context.strokeStyle = color
+      this.#context.strokeStyle = '#ffffff'
 
       this.#context.beginPath()
       this.#context.moveTo(startX, startY)
@@ -290,25 +326,25 @@ export default class Map {
       this.#context.closePath()
       this.#context.stroke()
 
-      this.#context.strokeStyle = '#ffffff'
-
     }
 
   }
 
-  animateRenderSectors(): void {
+  animateRenderSSegs(): void {
 
-    if(!this.#debugSSectorAnimation) return
+    if(this.#debugSSectorAnimation !== 1) return
 
     //render already generated ssectors
     for(let i = 0; i < this.#ssectorAnimationStepIdx.length; i++) {
-      this.renderSubSector(this.#ssectorAnimationStepIdx[i][0], `#${this.#ssectorAnimationStepIdx[i][1]}`)
+      this.renderSegsFromSubSector(this.#ssectorAnimationStepIdx[i][0], `#${this.#ssectorAnimationStepIdx[i][1]}`)
     }
 
     if(this.#m_SSectors.length == this.#ssectorAnimationIdx) return
 
     //generate new ssector
     if(this.#ssectorAnimationTick >= 1) {
+
+      if(this.#m_SSectors.length == this.#ssectorAnimationIdx) return
 
       const randomColor = Math.floor(Math.random()*16777215).toString(16)
         
@@ -355,11 +391,20 @@ export default class Map {
 
   toggleDebugSSectorAnimation(): void {
 
-    this.#debugSSectorAnimation = !this.#debugSSectorAnimation
-
-    if(this.#debugSSectorAnimation) {
-      this.#ssectorAnimationIdx = 0
-      this.#ssectorAnimationStepIdx = []
+    switch(this.#debugSSectorAnimation) {
+      case 0:
+        this.#debugSSectorAnimation++
+        break
+      case 1:
+        this.#debugSSectorAnimation++
+        break
+      case 2:
+        this.#debugSSectorAnimation++
+        this.#ssectorAnimationIdx = 0
+        this.#ssectorAnimationStepIdx = []
+        break
+      case 3:
+        this.#debugSSectorAnimation = 0
     }
 
   }
@@ -393,94 +438,40 @@ export default class Map {
 
   }
 
-  printVertexes(amount: number): void {
-
-    console.log(`Total of Vertexes: ${this.#m_Vertexes.length} | shown: ${amount}\n`)
-    
-    for(let i = 0; i < amount; i++) {
-      console.log(`Vertex ${i} | x: ${this.#m_Vertexes[i].xPosition} | y: ${this.#m_Vertexes[i].yPosition}`)
-    }
-    console.log('')
+  logVertexes(amount: number): void {
+    logMapLumpData(this.#m_Vertexes, 'Vertex', this.#m_Name, amount)
   }
 
-  printLinedefs(amount: number): void {
-
-    console.log(`Total of Linedefs: ${this.#m_Linedefs.length} | shown: ${amount}\n`)
-
-    for(let i = 0; i < amount; i++) {
-      console.log(`Linedef ${i} | startVertex: ${this.#m_Linedefs[i].startVertex} | endVertex: ${this.#m_Linedefs[i].endVertex} | flags: ${this.#m_Linedefs[i].flags} | linetype: ${this.#m_Linedefs[i].lineType} | sector tag: ${this.#m_Linedefs[i].sectorTag} | front sidedef: ${this.#m_Linedefs[i].frontSidedef} | back sidedef: ${this.#m_Linedefs[i].backSidedef}`)
-    }
-    console.log('')
+  logLinedefs(amount: number): void {
+    logMapLumpData(this.#m_Linedefs, 'Linedef', this.#m_Name, amount)
   }
 
-  printThings(amount: number): void {
-
-    console.log(`Total of Things: ${this.#m_Things.length} | shown: ${amount}\n`)
-
-    for(let i = 0; i < amount; i++) {
-      console.log(`Thing ${i} | xPos: ${this.#m_Things[i].xPosition} | yPos: ${this.#m_Things[i].yPosition} | angle: ${this.#m_Things[i].angle} | type: ${this.#m_Things[i].type} | flags: ${this.#m_Things[i].flags}`)
-    }
-    console.log('')
+  logThings(amount: number): void {
+    logMapLumpData(this.#m_Things, 'Thing', this.#m_Name, amount)
   }
 
-  dumpVertexesToFile(filename: string): void {
-    try {
-
-      if(fs.existsSync(filename)) {
-        fs.unlinkSync(filename)
-      }
-
-      fs.appendFileSync(filename, `Vertexes from map ${this.#m_Name} in (x,y) format\n`)
-
-      for(let i = 0; i < this.#m_Vertexes.length; i++) {
-        fs.appendFileSync(filename, `(${this.#m_Vertexes[i].xPosition}, ${this.#m_Vertexes[i].yPosition})\n`)
-      }
-
-      console.log(`Vertexes from map ${this.#m_Name} dumped into ${filename}`)
-
-    } catch (e) {
-      console.error(e)
-    }
+  logSubSectors(amount: number): void {
+    logMapLumpData(this.#m_SSectors, 'Subsector', this.#m_Name, amount)
   }
 
-  dumpAutomapLinesToFile(filename: string): void {
-    try {
-
-      if(fs.existsSync(filename)) {
-        fs.unlinkSync(filename)
-      }
-
-      fs.appendFileSync(filename, `Automap lines from map ${this.#m_Name} in "startX,startY,endX,endY" format\n`)
-
-      this.automap_lines.forEach(line => {
-        fs.appendFileSync(filename, `${line.vStart_xPos}, ${line.vStart_yPos}, ${line.vEnd_xPos}, ${line.vEnd_yPos}\n`)
-      })
-
-      console.log(`Automap lines from map ${this.#m_Name} dumped into ${filename}`)
-
-    } catch (e) {
-      console.error(e)
-    }
+  dumpVertexesToFile(): boolean {
+    return dumpMapLumpDataToFile(this.#m_Vertexes, 'Vertexes', this.#m_Name)
   }
 
-  dumpThingsToFile(filename: string): void {
-    try {
+  dumpAutomapLinesToFile(): boolean {
+    return dumpMapLumpDataToFile(this.automap_lines, 'Automaplines', this.#m_Name)
+  }
 
-      if(fs.existsSync(filename)) {
-        fs.unlinkSync(filename)
-      }
+  dumpThingsToFile(): boolean {
+    return dumpMapLumpDataToFile(this.#m_Things, 'Things', this.#m_Name)
+  }
 
-      fs.appendFileSync(filename, `Things from map ${this.#m_Name} in "xPos,yPos,angle,type,flags" format\n`)
+  dumpSubSectorsToFile(): boolean {
+    return dumpMapLumpDataToFile(this.#m_SSectors, 'Subsectors', this.#m_Name)
+  }
 
-      this.#m_Things.forEach(thing => {
-        fs.appendFileSync(filename, `${thing.xPosition}, ${thing.yPosition}, ${thing.angle}, ${thing.type}, ${thing.flags}`)
-      })
-
-      console.log(`Automap lines from map ${this.#m_Name} dumped into ${filename}`)
-
-    } catch (e) {
-      console.error(e)
-    }
+  dumpSegsToFile(): boolean {
+    return dumpMapLumpDataToFile(this.#m_Segs, 'Segs', this.#m_Name)
   }
 
 }

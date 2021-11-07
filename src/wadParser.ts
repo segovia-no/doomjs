@@ -1,4 +1,4 @@
-import { Linedef, Vertex, Thing, Node } from "./interfaces/map.interface"
+import { Linedef, Vertex, Thing, Node, SubSector, Seg } from "./interfaces/map.interface"
 import { WADDirectory, WADHeader } from "./interfaces/wadLoader.interface"
 
 export default class WADParser {
@@ -64,6 +64,24 @@ export default class WADParser {
       leftBoxRight: wadBuffer.readInt16LE(nodeOffset + 22),
       rightChildIdx: wadBuffer.readUInt16LE(nodeOffset + 24),
       leftChildIdx: wadBuffer.readUInt16LE(nodeOffset + 26)
+    }
+  }
+
+  readMapSubSectorData(wadBuffer: Buffer, sectorOffset: number): SubSector {
+    return {
+      segCount: wadBuffer.readUInt16LE(sectorOffset),
+      firstSegIdx: wadBuffer.readUInt16LE(sectorOffset + 2)
+    }
+  }
+
+  readMapSegData(wadBuffer: Buffer, segOffset: number): Seg {
+    return {
+      startVertex: wadBuffer.readUInt16LE(segOffset),
+      endVertex: wadBuffer.readUInt16LE(segOffset + 2),
+      angle: wadBuffer.readInt16LE(segOffset + 4),
+      linedefIdx: wadBuffer.readUInt16LE(segOffset + 6),
+      direction: wadBuffer.readUInt16LE(segOffset + 8),
+      offset: wadBuffer.readInt16LE(segOffset + 10)
     }
   }
 

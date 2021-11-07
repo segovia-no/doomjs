@@ -24,6 +24,7 @@ export default class Engine {
   tickLength: number = 1000 / this.ticspersecond
 
   #lastTic = Date.now()
+  #ticCount = 0
 
   constructor(wadFilepath: string = './DOOM.WAD', mapName: string = 'E1M1') {
     this.#wadLoader = new WADLoader(wadFilepath)
@@ -72,6 +73,7 @@ export default class Engine {
     if(this.#lastTic + this.tickLength <= now) {
 
       this.#lastTic = now
+      this.#ticCount++
 
       this.update()
       this.render()
@@ -91,9 +93,7 @@ export default class Engine {
     this.clearScreen()
 
     //render pipeline
-    this.map.renderAutoMapWalls()
-    this.map.renderAutoMapPlayer()
-    this.map.renderBSPTree()
+    this.map.render()
 
     //buffer conversion
     const buffer = this.#context.canvas.toBuffer('raw')
@@ -122,6 +122,9 @@ export default class Engine {
           break
         case '0':
           this.map.zoomBSPTraverseDepth(false)
+          break
+        case '2':
+          this.map.toggleDebugSSectorAnimation()
           break
       }
     })

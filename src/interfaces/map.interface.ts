@@ -101,3 +101,35 @@ export interface Node {
   rightChildIdx: number;
   leftChildIdx: number;
 }
+
+/**
+ * SubSector Interface
+ *
+ * @interface SubSector
+ * @property {number} segCount The number of segs that compose this sub-segment (unsigned short - 2 bytes)
+ * @property {number} firstSegIdx The idx of the first seg in the seg list
+ */
+export interface SubSector {
+  segCount: number;
+  firstSegIdx: number;
+}
+
+/**
+ * Seg Interface
+ *
+ * @interface Seg
+ * @property {number} startVertex The starting vertex index of the seg (unsigned short - 2 bytes)
+ * @property {number} endVertex The ending vertex index of the seg (unsigned short - 2 bytes)
+ * @property {number} angle Angle of the vertex
+ * @property {number} linedefIdx The linedefIdx associated with the seg
+ * @property {number} direction 0 = same as linedef, 1 = reversed
+ * @property {number} offset The offset of the seg from the linedef
+ */
+export interface Seg {
+  startVertex: number;
+  endVertex: number;
+  angle: number;
+  linedefIdx: number;
+  direction: number;
+  offset: number;
+}

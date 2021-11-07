@@ -1,6 +1,7 @@
+import { Console } from 'console'
 import * as fs from 'fs'
 
-import { Linedef, Vertex, AutomapLines, Thing, Node } from "./interfaces/map.interface"
+import { Linedef, Vertex, AutomapLines, Thing, Node, SubSector, Seg } from "./interfaces/map.interface"
 import Player from './player'
 
 import { scaleBetween } from './utils/math'
@@ -14,6 +15,8 @@ export default class Map {
   #m_Linedefs: Linedef[] = []
   #m_Things: Thing[] = []
   #m_Nodes: Node[] = []
+  #m_SSectors: SubSector[] = []
+  #m_Segs: Seg[] = []
 
   //engine
   #context: any
@@ -51,6 +54,12 @@ export default class Map {
   #debugBSPTraverse: boolean = false
   #debugBSPPath: number[] = []
   #debugBSPZoomDepth: number = 0
+
+  //Sectors
+  #debugSSectorAnimation: boolean = false
+  #ssectorAnimationTick: number = 0
+  #ssectorAnimationIdx: number = 0
+  #ssectorAnimationStepIdx: any[] = []
   
   constructor(mapName: string) {
     this.#m_Name = mapName
@@ -85,6 +94,14 @@ export default class Map {
 
   addNode(node: Node): void {
     this.#m_Nodes.push(node)
+  }
+
+  addSubSector(subsector: SubSector): void {
+    this.#m_SSectors.push(subsector)
+  }
+
+  addSeg(seg: Seg): void {
+    this.#m_Segs.push(seg)
   }
 
   initThings(): boolean {
@@ -126,10 +143,10 @@ export default class Map {
         const vEnd: Vertex = this.#m_Vertexes[linedef.endVertex]
 
         this.automap_lines.push({
-          vStart_xPos: scaleBetween(vStart.xPosition, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax),
-          vStart_yPos: windowHeight - scaleBetween(vStart.yPosition, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax),
-          vEnd_xPos: scaleBetween(vEnd.xPosition , this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax),
-          vEnd_yPos: windowHeight - scaleBetween(vEnd.yPosition, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+          vStart_xPos: this.remapXToScreen(vStart.xPosition),
+          vStart_yPos: this.remapYToScreen(vStart.yPosition),
+          vEnd_xPos: this.remapXToScreen(vEnd.xPosition),
+          vEnd_yPos: this.remapYToScreen(vEnd.yPosition)
         })
 
       })
@@ -142,7 +159,19 @@ export default class Map {
     }
   }
 
+  //map render pipeline
+  render(): void {
+
+    this.renderAutoMapWalls()
+    this.renderAutoMapPlayer()
+    this.renderBSPTree()
+    this.animateRenderSectors()
+
+  }
+
   renderAutoMapWalls(): void {
+
+    if(this.#debugSSectorAnimation) return
 
     this.#context.strokeStyle = '#ffffff'
 
@@ -158,8 +187,8 @@ export default class Map {
 
   renderAutoMapPlayer(): void {
 
-    const playerXpos = scaleBetween(this.player1.getXPosition(), this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const playerYpos = this.#context.canvas.height - scaleBetween(this.player1.getYPosition(), this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const playerXpos = this.remapXToScreen(this.player1.getXPosition())
+    const playerYpos = this.remapYToScreen(this.player1.getYPosition())
 
     const radius = 5 - (5 * (1 - this.automap_scaleFactor))
 
@@ -176,15 +205,15 @@ export default class Map {
 
     const node = this.#m_Nodes[nodeIdx]
 
-    const rightBoxLeft = scaleBetween(node.rightBoxLeft, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const rightBoxTop = this.#context.canvas.height - scaleBetween(node.rightBoxTop, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
-    const rightBoxRight = scaleBetween(node.rightBoxRight, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const rightBoxBottom = this.#context.canvas.height - scaleBetween(node.rightBoxBottom, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const rightBoxLeft = this.remapXToScreen(node.rightBoxLeft)
+    const rightBoxTop = this.remapYToScreen(node.rightBoxTop)
+    const rightBoxRight = this.remapXToScreen(node.rightBoxRight)
+    const rightBoxBottom = this.remapYToScreen(node.rightBoxBottom)
 
-    const leftBoxLeft = scaleBetween(node.leftBoxLeft, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const leftBoxTop = this.#context.canvas.height - scaleBetween(node.leftBoxTop, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
-    const leftBoxRight = scaleBetween(node.leftBoxRight, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
-    const leftBoxBottom = this.#context.canvas.height - scaleBetween(node.leftBoxBottom, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
+    const leftBoxLeft = this.remapXToScreen(node.leftBoxLeft)
+    const leftBoxTop = this.remapYToScreen(node.leftBoxTop)
+    const leftBoxRight = this.remapXToScreen(node.leftBoxRight)
+    const leftBoxBottom = this.remapYToScreen(node.leftBoxBottom)
 
     this.#context.strokeStyle = '#ff0000'
     this.#context.strokeRect(rightBoxLeft, rightBoxTop, rightBoxRight - rightBoxLeft, rightBoxBottom - rightBoxTop)
@@ -196,15 +225,7 @@ export default class Map {
 
   }
 
-  isPointOnLeftSide(xPos: number, yPos: number, nodeIdx: number): boolean {
-
-    const dx = xPos - this.#m_Nodes[nodeIdx].xPartition
-    const dy = yPos - this.#m_Nodes[nodeIdx].yPartition
-
-    return (((dx * this.#m_Nodes[nodeIdx].changeYPartition) - (dy * this.#m_Nodes[nodeIdx].changeXPartition)) <= 0)
-
-  }
-
+  //BSP
   renderBSPTree(): void {
     this.traverseBSPNode(this.#m_Nodes.length - 1)
   }
@@ -212,8 +233,12 @@ export default class Map {
   traverseBSPNode(nodeIdx: number, debugDepthIdx: number = 0): void {
 
     if(nodeIdx & SUBSECTORIDENTIFIER) {
+
+      if(this.#debugSSectorAnimation) return
+
       this.renderSubSector(nodeIdx & ~SUBSECTORIDENTIFIER)
       return
+
     }
 
     if(this.#debugBSPTraverse) {
@@ -240,8 +265,62 @@ export default class Map {
 
   }
 
-  renderSubSector(nodeIdx: number): void {
-    return
+  //Sectors
+  renderSubSector(subsectorId: number, color: string = 'ff0000'): void {
+  
+    const sector = this.#m_SSectors[subsectorId]
+
+    for(let i = 0; i < sector.segCount; i++) {
+
+      const seg = this.#m_Segs[sector.firstSegIdx + i]
+
+      const vStart = this.#m_Vertexes[seg.startVertex]
+      const vEnd   = this.#m_Vertexes[seg.endVertex]
+
+      const startX = this.remapXToScreen(vStart.xPosition)
+      const startY = this.remapYToScreen(vStart.yPosition)
+      const endX   = this.remapXToScreen(vEnd.xPosition)
+      const endY   = this.remapYToScreen(vEnd.yPosition)
+
+      this.#context.strokeStyle = color
+
+      this.#context.beginPath()
+      this.#context.moveTo(startX, startY)
+      this.#context.lineTo(endX, endY)
+      this.#context.closePath()
+      this.#context.stroke()
+
+      this.#context.strokeStyle = '#ffffff'
+
+    }
+
+  }
+
+  animateRenderSectors(): void {
+
+    if(!this.#debugSSectorAnimation) return
+
+    //render already generated ssectors
+    for(let i = 0; i < this.#ssectorAnimationStepIdx.length; i++) {
+      this.renderSubSector(this.#ssectorAnimationStepIdx[i][0], `#${this.#ssectorAnimationStepIdx[i][1]}`)
+    }
+
+    if(this.#m_SSectors.length == this.#ssectorAnimationIdx) return
+
+    //generate new ssector
+    if(this.#ssectorAnimationTick >= 1) {
+
+      const randomColor = Math.floor(Math.random()*16777215).toString(16)
+        
+      this.#ssectorAnimationStepIdx.push([this.#ssectorAnimationIdx, randomColor])
+      
+      this.#ssectorAnimationTick = 0
+      this.#ssectorAnimationIdx++
+
+    } else {
+      this.#ssectorAnimationTick++
+    }
+
   }
 
   //Options
@@ -258,6 +337,9 @@ export default class Map {
   }
 
   zoomBSPTraverseDepth(zoomIn: boolean): void {
+
+    if(!this.#debugBSPTraverse) return
+
     if(zoomIn) {
 
       if(!this.#debugBSPPath[this.#debugBSPZoomDepth +1]) return
@@ -269,6 +351,35 @@ export default class Map {
       this.#debugBSPZoomDepth--
       
     }
+  }
+
+  toggleDebugSSectorAnimation(): void {
+
+    this.#debugSSectorAnimation = !this.#debugSSectorAnimation
+
+    if(this.#debugSSectorAnimation) {
+      this.#ssectorAnimationIdx = 0
+      this.#ssectorAnimationStepIdx = []
+    }
+
+  }
+
+  //Utils
+  isPointOnLeftSide(xPos: number, yPos: number, nodeIdx: number): boolean {
+
+    const dx = xPos - this.#m_Nodes[nodeIdx].xPartition
+    const dy = yPos - this.#m_Nodes[nodeIdx].yPartition
+
+    return (((dx * this.#m_Nodes[nodeIdx].changeYPartition) - (dy * this.#m_Nodes[nodeIdx].changeXPartition)) <= 0)
+
+  }
+
+  remapXToScreen(xPos: number): number {
+    return scaleBetween(xPos, this.#automapStartX, this.#automapEndX, this.vertexes_Xmin, this.vertexes_Xmax)
+  }
+
+  remapYToScreen(yPos: number): number {
+    return this.#context.canvas.height - scaleBetween(yPos, this.#automapStartY, this.#automapEndY, this.vertexes_Ymin, this.vertexes_Ymax)
   }
 
   //Info

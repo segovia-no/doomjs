@@ -95,6 +95,10 @@ export default class WADLoader {
 
       if(!this.readMapNodes(map)) throw `Error: Failed to load nodes of map ${map.getName()}`
 
+      if(!this.readMapSubSectors(map)) throw `Error: Failed to load sectors of map ${map.getName()}`
+
+      if(!this.readMapSegs(map)) throw `Error: Failed to load segs of map ${map.getName()}`
+
       return true
 
     } catch (e) {
@@ -205,6 +209,34 @@ export default class WADLoader {
 
     for(let i = 0; i < nodesCount; i++) {
       map.addNode( this.wadParser.readMapNodeData(this.wadBuffer, this.wadDirectories[map.idx_NODES].lumpOffset + i*28))
+    }
+
+    return true
+
+  }
+
+  readMapSubSectors(map: Map): boolean {
+
+    if(map.idx_SSECTORS == 0) return false
+
+    const ssecCount = this.wadDirectories[map.idx_SSECTORS].lumpSize / 4 // each sector is 4 bytes long
+
+    for(let i = 0; i < ssecCount; i++) {
+      map.addSubSector( this.wadParser.readMapSubSectorData(this.wadBuffer, this.wadDirectories[map.idx_SSECTORS].lumpOffset + i*4))
+    }
+
+    return true
+
+  }
+
+  readMapSegs(map: Map): boolean {
+
+    if(map.idx_SEGS == 0) return false
+
+    const segsCount = this.wadDirectories[map.idx_SEGS].lumpSize / 12 // each seg is 12 bytes long
+
+    for(let i = 0; i < segsCount; i++) {
+      map.addSeg( this.wadParser.readMapSegData(this.wadBuffer, this.wadDirectories[map.idx_SEGS].lumpOffset + i*12))
     }
 
     return true

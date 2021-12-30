@@ -55,7 +55,7 @@ export default class Player {
     this.#angle = normalize360(this.#angle - (0.1875 * this.#rotationSpeedFactor))
   }
 
-  angleToVertex(vertex: Vertex) {
+  vertexToAngle(vertex: Vertex) {
     const dx = vertex.xPosition - this.#xPos 
     const dy = vertex.yPosition - this.#yPos
 
@@ -64,8 +64,8 @@ export default class Player {
 
   clipVertexesInFOV(v1: Vertex, v2: Vertex) {
 
-    let v1Angle = this.angleToVertex(v1)
-    let v2Angle = this.angleToVertex(v2)
+    let v1Angle = this.vertexToAngle(v1)
+    let v2Angle = this.vertexToAngle(v2)
 
     //check if the seg is facing the same direction as the player
     let v1Tov2Span = normalize360(v1Angle - v2Angle)

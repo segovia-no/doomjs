@@ -3,6 +3,7 @@ import WADLoader from "./wadLoader"
 
 const SDL = require('@kmamal/sdl')
 import { createCanvas } from 'canvas'
+import ViewRenderer from "./viewRenderer"
 
 export default class Engine {
 
@@ -20,6 +21,8 @@ export default class Engine {
   #canvas: any
   #context: any
 
+  #viewRenderer: ViewRenderer
+
   ticspersecond: number = 35
   tickLength: number = 1000 / this.ticspersecond
 
@@ -27,7 +30,8 @@ export default class Engine {
 
   constructor(wadFilepath: string = './DOOM.WAD', mapName: string = 'E1M1') {
     this.#wadLoader = new WADLoader(wadFilepath)
-    this.map = new Map(mapName)
+    this.#viewRenderer = new ViewRenderer(this.#windowWidth, this.#windowHeight)
+    this.map = new Map(mapName, this.#viewRenderer)
   }
 
 
@@ -49,8 +53,9 @@ export default class Engine {
       this.#canvas = createCanvas(this.#windowWidth, this.#windowHeight)
       this.#context = this.#canvas.getContext('2d')
 
-      //pass renderer to map
+      //pass renderer to dependencies
       if(!this.map.setContext(this.#context)) throw 'Error: could not set graphics context for map'
+      if(!this.#viewRenderer.setContext(this.#context)) throw 'Error: could not set graphics context for view renderer'
 
       //load data
       if(!this.#wadLoader.loadWAD()) throw 'Error: could not load the WAD file'
@@ -79,10 +84,24 @@ export default class Engine {
     }
 
     if(Date.now() - this.#lastTic < this.tickLength - 16) {
-      setTimeout(this.gameLoop.bind(this))
+
+      if(!this.isOver) {
+        setTimeout(this.gameLoop.bind(this))
+      }
+
     } else {
-      setImmediate(this.gameLoop.bind(this))
+
+      if(!this.isOver) {
+        setImmediate(this.gameLoop.bind(this))
+      }
+
     }
+
+    if(this.isOver) this.#sdlWindow.destroy()
+
+  }
+
+  update(): void {
 
   }
 
@@ -130,6 +149,12 @@ export default class Engine {
         case 'right':
           this.map.player1.rotateRight()
           break
+        case 'tab':
+          this.map.toggleAutomap()
+          break
+        case 'escape':
+          this.isOver = true
+          break
       }
     })
 
@@ -137,10 +162,6 @@ export default class Engine {
 
   quit(): void {
     this.isOver = false
-  }
-
-  update(): void {
-
   }
 
   clearScreen() {

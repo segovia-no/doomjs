@@ -3,6 +3,7 @@ import Player from './player'
 import { dumpMapLumpDataToFile, logMapLumpData } from './utils/log'
 
 import { scaleBetween } from './utils/math'
+import ViewRenderer from "./viewRenderer"
 
 const SUBSECTORIDENTIFIER: number = 0x8000
 
@@ -18,6 +19,7 @@ export default class Map {
 
   //engine
   #context: any
+  #viewRenderer: ViewRenderer
 
   //things
   player1: Player = new Player(0,0,0)
@@ -35,6 +37,7 @@ export default class Map {
   idx_BLOCKMAP: number = 0
 
   //automap
+  #enableAutomap: boolean = false
   automap_scaleFactor: number = 0.9
   #automapStartX: number = 0
   #automapStartY: number = 0
@@ -59,8 +62,9 @@ export default class Map {
   #ssectorAnimationIdx: number = 0
   #ssectorAnimationStepIdx: any[] = []
   
-  constructor(mapName: string) {
+  constructor(mapName: string, viewRenderer: ViewRenderer) {
     this.#m_Name = mapName
+    this.#viewRenderer = viewRenderer
   }
 
   setContext(context: any): boolean {
@@ -160,11 +164,14 @@ export default class Map {
   //map render pipeline
   render(): void {
 
-    this.renderAutoMapWalls()
-    this.renderAutoMapPlayer()
-    this.renderBSPTree()
+    if(this.#enableAutomap){
+      this.renderAutoMapWalls()
+      this.renderAutoMapPlayer()
+      this.renderBSPTree()
+      this.animateRenderSSegs()
+    }
+
     this.renderSegsInFOV()
-    this.animateRenderSSegs()
 
   }
 
@@ -304,27 +311,23 @@ export default class Map {
 
   renderSegsInFOV() {
 
-    if(this.#debugSSectorAnimation !== 3) return
-
     for(let i = 0; i < this.#m_Segs.length; i++) {
 
       const vStart = this.#m_Vertexes[this.#m_Segs[i].startVertex]
       const vEnd   = this.#m_Vertexes[this.#m_Segs[i].endVertex]
 
-      if(!this.player1.clipVertexesInFOV(vStart, vEnd)) continue
+      if(this.player1.clipVertexesInFOV(vStart, vEnd)) {
 
-      const startX = this.remapXToScreen(vStart.xPosition)
-      const startY = this.remapYToScreen(vStart.yPosition)
-      const endX   = this.remapXToScreen(vEnd.xPosition)
-      const endY   = this.remapYToScreen(vEnd.yPosition)
+        const v1x = vStart.xPosition - this.player1.getXPosition() 
+        const v2x = vEnd.xPosition - this.player1.getXPosition()
 
-      this.#context.strokeStyle = '#ffffff'
+        this.#viewRenderer.addWallinFOV(v1x, v2x)
 
-      this.#context.beginPath()
-      this.#context.moveTo(startX, startY)
-      this.#context.lineTo(endX, endY)
-      this.#context.closePath()
-      this.#context.stroke()
+        if(this.#debugSSectorAnimation == 3) {
+          this.renderSeg(this.#m_Segs[i])
+        }
+        
+      }
 
     }
 
@@ -366,6 +369,10 @@ export default class Map {
     } else {
       this.automap_scaleFactor -= 0.01
     }
+  }
+
+  toggleAutomap(): void {
+    this.#enableAutomap = !this.#enableAutomap
   }
 
   toggleDebugBSPTraverse(): void {
@@ -434,7 +441,10 @@ export default class Map {
     console.log(`-----------------`)
 
     console.log(`# Vertexes: ${this.#m_Vertexes.length}`)
-    console.log(`# Linedefs: ${this.#m_Linedefs.length}\n`)
+    console.log(`# Linedefs: ${this.#m_Linedefs.length}`)
+    console.log(`# Things: ${this.#m_Things.length}`)
+    console.log(`# SubSectors: ${this.#m_SSectors.length}`)
+    console.log(`# Segs: ${this.#m_Segs.length}\n`)
 
   }
 

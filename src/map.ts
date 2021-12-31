@@ -318,15 +318,17 @@ export default class Map {
 
       if(this.player1.clipVertexesInFOV(vStart, vEnd)) {
 
-        const v1x = vStart.xPosition - this.player1.getXPosition() 
-        const v2x = vEnd.xPosition - this.player1.getXPosition()
+        const v1x = this.player1.vertexToAngle(vStart)
+        const v2x = this.player1.vertexToAngle(vEnd)
 
-        this.#viewRenderer.addWallinFOV(v1x, v2x)
-
-        if(this.#debugSSectorAnimation == 3) {
-          this.renderSeg(this.#m_Segs[i])
+        if(this.#m_Linedefs[this.#m_Segs[i].linedefIdx].frontSidedef !== 0xFFFF) {
+          this.#viewRenderer.addWallinFOV(v1x, v2x)
         }
         
+        if(this.#debugSSectorAnimation == 3 && this.#enableAutomap) {
+          this.renderSeg(this.#m_Segs[i])
+        }
+
       }
 
     }

@@ -19,8 +19,8 @@ export interface Vertex {
  * @property {number} flags Linedef flags (unsigned short - 2 bytes)
  * @property {number} lineType Type of line / action (unsigned short - 2 bytes)
  * @property {number} sectorTag Sector tag (unsigned short - 2 bytes)
- * @property {number} frontSidedef The frontal face of the linedef (unsigned short - 2 bytes)
- * @property {number} backSidedef The backside of the linedef (unsigned short - 2 bytes)
+ * @property {number} frontSidedef The frontal or "left" face of the linedef (unsigned short - 2 bytes)
+ * @property {number} backSidedef The backside or "right" face of the linedef (unsigned short - 2 bytes)
  */
 export interface Linedef {
   startVertex: number;

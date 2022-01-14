@@ -54,7 +54,7 @@ export default class ViewRenderer {
     }
   }
 
-  addWallinFOV(v1Angle: number, v2Angle: number) {
+  addWallinFOV(v1Angle: number, v2Angle: number): void {
 
     const v1Screen = this.angleToScreen(v1Angle)
     const v2Screen = this.angleToScreen(v2Angle)
@@ -80,6 +80,10 @@ export default class ViewRenderer {
 
     this.#context.strokeStyle = '#ffffff'
 
+  }
+
+  initFrame(): void {
+    
   }
 
 }

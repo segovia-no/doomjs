@@ -33,8 +33,8 @@ export default class WADParser {
       flags: wadBuffer.readUInt16LE(linedefOffset + 4),
       lineType: wadBuffer.readUInt16LE(linedefOffset + 6),
       sectorTag: wadBuffer.readUInt16LE(linedefOffset + 8),
-      frontSidedef: wadBuffer.readUInt16LE(linedefOffset + 10),
-      backSidedef: wadBuffer.readUInt16LE(linedefOffset + 12)
+      rightSidedef: wadBuffer.readUInt16LE(linedefOffset + 10),
+      leftSidedef: wadBuffer.readUInt16LE(linedefOffset + 12)
     }
   }
 

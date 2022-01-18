@@ -321,7 +321,7 @@ export default class Map {
         const v1x = this.player1.vertexToAngle(vStart)
         const v2x = this.player1.vertexToAngle(vEnd)
 
-        if(this.#m_Linedefs[this.#m_Segs[i].linedefIdx].frontSidedef !== 0xFFFF) {
+        if(this.#m_Linedefs[this.#m_Segs[i].linedefIdx].leftSidedef !== 0xFFFF) {
           this.#viewRenderer.addWallinFOV(v1x, v2x)
         }
         

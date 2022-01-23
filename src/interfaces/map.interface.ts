@@ -133,3 +133,11 @@ export interface Seg {
   direction: number;
   offset: number;
 }
+
+export type SolidSegmentRange = [number, number]
+
+export interface SolidSegmentData {
+  seg: Seg;
+  v1XScreen: number;
+  v2XScreen: number;
+}

@@ -60,7 +60,10 @@ export default class Engine {
       //load data
       if(!this.#wadLoader.loadWAD()) throw 'Error: could not load the WAD file'
       if(!this.#wadLoader.loadMapData(this.map)) throw 'Error: could not load the map data'
+
+      //init rendering
       if(!this.map.initAutomap(this.#windowWidth, this.#windowHeight)) throw `Error: Failed to initialize automap of map ${this.map.getName()}`
+      if(!this.#viewRenderer.initFrame()) throw `Error: Failed to initialize frame (Solid wall clipping)`
 
       return true
 

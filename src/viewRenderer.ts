@@ -1,3 +1,4 @@
+import { Seg, SolidSegmentData, SolidSegmentRange } from "./interfaces/map.interface"
 import Player from "./player"
 
 export default class ViewRenderer {
@@ -9,6 +10,9 @@ export default class ViewRenderer {
 
   //things
   player1: Player = new Player(0,0,0)
+
+  //rendering
+  #m_SolidWallRanges: SolidSegmentRange[] = []
 
   constructor(windowWidth: number, windowHeight: number) {
     this.#windowWidth = windowWidth
@@ -82,8 +86,67 @@ export default class ViewRenderer {
 
   }
 
-  initFrame(): void {
-    
+  initFrame(): boolean {
+    try {
+
+    this.#m_SolidWallRanges = []
+
+    const leftSideWall: SolidSegmentRange = [-Infinity, -1]
+    const rightSideWall: SolidSegmentRange = [this.#windowWidth, Infinity]
+
+    this.#m_SolidWallRanges.push(leftSideWall, rightSideWall)
+
+    return true
+
+    } catch (e) {
+      console.error(e)
+      return false
+    }
+  }
+
+  clipSolidWalls(seg: Seg, v1XScreen: number, v2XScreen: number): void {
+
+    const currentWall: SolidSegmentRange = [v1XScreen, v2XScreen]
+
+    let foundClipWallIdx: number = 0
+
+    while(foundClipWallIdx < this.#m_SolidWallRanges.length && this.#m_SolidWallRanges[foundClipWallIdx][1] < currentWall[0]) {
+      foundClipWallIdx++
+    }
+
+    //Case: update and insert is to the left side of foundClipWallIdx
+
+    if(currentWall[1] < this.#m_SolidWallRanges[foundClipWallIdx][0]) {
+
+      //is overlapping?
+      if(currentWall[0] < this.#m_SolidWallRanges[foundClipWallIdx][0] - 1) {
+        //all of wall is visible -> insert
+        this.storeWallRange(seg, currentWall[0], currentWall[1])
+        this.#m_SolidWallRanges.splice(foundClipWallIdx, 0, currentWall)
+        return
+      }
+
+      // The end is already included, just update the start
+      this.storeWallRange(seg, currentWall[0], this.#m_SolidWallRanges[foundClipWallIdx][0] - 1)
+      this.#m_SolidWallRanges[foundClipWallIdx][0] = currentWall[0]
+
+    }
+
+  }
+
+  storeWallRange(seg: Seg, v1XScreen: number, v2XScreen: number): void {
+
+    const Wall: SolidSegmentData = {seg, v1XScreen, v2XScreen}
+    this.drawSolidWall(Wall)
+
+  }
+
+  drawSolidWall(wall: SolidSegmentData): void {
+
+    this.#context.fillStyle = '#ff0000'
+    this.#context.rect(wall.v1XScreen, 0, wall.v2XScreen - wall.v1XScreen + 1, this.#windowHeight)
+    this.#context.fill()
+
   }
 
 }

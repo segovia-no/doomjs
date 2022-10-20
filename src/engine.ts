@@ -1,18 +1,19 @@
-import Map from "./map"
-import WADLoader from "./wadLoader"
+import Map from './map'
+import WADLoader from './wadLoader'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const SDL = require('@kmamal/sdl')
 import { createCanvas } from 'canvas'
-import ViewRenderer from "./viewRenderer"
+import ViewRenderer from './viewRenderer'
 
 export default class Engine {
 
   // props
-  #windowWidth: number = 800
-  #windowHeight: number = 600
-  #windowTitle: string = 'DOOM.js'
+  #windowWidth = 800
+  #windowHeight = 600
+  #windowTitle = 'DOOM.js'
 
-  isOver: boolean = false
+  isOver = false
 
   #wadLoader: WADLoader
   map: Map
@@ -23,12 +24,12 @@ export default class Engine {
 
   #viewRenderer: ViewRenderer
 
-  ticspersecond: number = 35
+  ticspersecond = 35
   tickLength: number = 1000 / this.ticspersecond
 
   #lastTic = Date.now()
 
-  constructor(wadFilepath: string = './DOOM.WAD', mapName: string = 'E1M1') {
+  constructor(wadFilepath = './DOOM.WAD', mapName = 'E1M1') {
     this.#wadLoader = new WADLoader(wadFilepath)
     this.#viewRenderer = new ViewRenderer(this.#windowWidth, this.#windowHeight)
     this.map = new Map(mapName, this.#viewRenderer)
@@ -63,7 +64,7 @@ export default class Engine {
 
       //init rendering
       if(!this.map.initAutomap(this.#windowWidth, this.#windowHeight)) throw `Error: Failed to initialize automap of map ${this.map.getName()}`
-      if(!this.#viewRenderer.initFrame()) throw `Error: Failed to initialize frame (Solid wall clipping)`
+      if(!this.#viewRenderer.initFrame()) throw 'Error: Failed to initialize frame (Solid wall clipping)'
 
       return true
 
@@ -105,7 +106,7 @@ export default class Engine {
   }
 
   update(): void {
-
+    //TODO
   }
 
   render(): void {
@@ -126,38 +127,38 @@ export default class Engine {
   initInputsListeners(): void {
     this.#sdlWindow.on('keyDown', (ev: any) => {
       switch(ev.key) {
-        case '+' :
-          this.map.zoomAutomap(true)
-          this.map.initAutomap(this.#windowWidth, this.#windowHeight)
-          break
-        case '-':
-          this.map.zoomAutomap(false)
-          this.map.initAutomap(this.#windowWidth, this.#windowHeight)
-          break
-        case '.':
-          this.map.toggleDebugBSPTraverse()
-          break
-        case '1':
-          this.map.zoomBSPTraverseDepth(true)
-          break
-        case '0':
-          this.map.zoomBSPTraverseDepth(false)
-          break
-        case '2':
-          this.map.toggleDebugSSectorAnimation()
-          break
-        case 'left':
-          this.map.player1.rotateLeft()
-          break
-        case 'right':
-          this.map.player1.rotateRight()
-          break
-        case 'tab':
-          this.map.toggleAutomap()
-          break
-        case 'escape':
-          this.isOver = true
-          break
+      case '+' :
+        this.map.zoomAutomap(true)
+        this.map.initAutomap(this.#windowWidth, this.#windowHeight)
+        break
+      case '-':
+        this.map.zoomAutomap(false)
+        this.map.initAutomap(this.#windowWidth, this.#windowHeight)
+        break
+      case '.':
+        this.map.toggleDebugBSPTraverse()
+        break
+      case '1':
+        this.map.zoomBSPTraverseDepth(true)
+        break
+      case '0':
+        this.map.zoomBSPTraverseDepth(false)
+        break
+      case '2':
+        this.map.toggleDebugSSectorAnimation()
+        break
+      case 'left':
+        this.map.player1.rotateLeft()
+        break
+      case 'right':
+        this.map.player1.rotateRight()
+        break
+      case 'tab':
+        this.map.toggleAutomap()
+        break
+      case 'escape':
+        this.isOver = true
+        break
       }
     })
 

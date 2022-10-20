@@ -1,11 +1,11 @@
-import { Seg, SolidSegmentData, SolidSegmentRange } from "./interfaces/map.interface"
-import Player from "./player"
+import { Seg, SolidSegmentData, SolidSegmentRange } from './interfaces/map.interface'
+import Player from './player'
 
 export default class ViewRenderer {
 
   //engine
-  #windowWidth: number = 800
-  #windowHeight: number = 600
+  #windowWidth = 800
+  #windowHeight = 600
   #context: any
 
   //things
@@ -34,7 +34,7 @@ export default class ViewRenderer {
 
       if(!this.#windowWidth) throw 'Error: no canvas dimensions set'
     
-      let iX: number = 0
+      let iX = 0
 
       //left side
       if (angle > 90) {
@@ -89,14 +89,14 @@ export default class ViewRenderer {
   initFrame(): boolean {
     try {
 
-    this.#m_SolidWallRanges = []
+      this.#m_SolidWallRanges = []
 
-    const leftSideWall: SolidSegmentRange = [-Infinity, -1]
-    const rightSideWall: SolidSegmentRange = [this.#windowWidth, Infinity]
+      const leftSideWall: SolidSegmentRange = [-Infinity, -1]
+      const rightSideWall: SolidSegmentRange = [this.#windowWidth, Infinity]
 
-    this.#m_SolidWallRanges.push(leftSideWall, rightSideWall)
+      this.#m_SolidWallRanges.push(leftSideWall, rightSideWall)
 
-    return true
+      return true
 
     } catch (e) {
       console.error(e)
@@ -108,7 +108,7 @@ export default class ViewRenderer {
 
     const currentWall: SolidSegmentRange = [v1XScreen, v2XScreen]
 
-    let foundClipWallIdx: number = 0
+    let foundClipWallIdx = 0
 
     while(foundClipWallIdx < this.#m_SolidWallRanges.length && this.#m_SolidWallRanges[foundClipWallIdx][1] < currentWall[0]) {
       foundClipWallIdx++

@@ -1,18 +1,18 @@
-import { Vertex } from "./interfaces/map.interface"
-import { normalize360 } from "./utils/math"
+import { Vertex } from './interfaces/map.interface'
+import { normalize360 } from './utils/math'
 
 export default class Player {
 
   #xPos: number
   #yPos: number
   #angle: number
-  #playerId: number = 1
+  #playerId = 1
 
   #rotationSpeedFactor = 12
   #moveSpeedFactor = 4
   #FOV = 90
 
-  constructor(xPos: number, yPos: number, angle:number, playerId: number = 1) {
+  constructor(xPos: number, yPos: number, angle:number, playerId = 1) {
     this.#xPos = xPos
     this.#yPos = yPos
     this.#angle = angle
@@ -68,7 +68,7 @@ export default class Player {
     let v2Angle = this.vertexToAngle(v2)
 
     //check if the seg is facing the same direction as the player
-    let v1Tov2Span = normalize360(v1Angle - v2Angle)
+    const v1Tov2Span = normalize360(v1Angle - v2Angle)
 
     if(v1Tov2Span >= 180) {
       return false
@@ -84,7 +84,6 @@ export default class Player {
     const v1Moved = normalize360(v1Angle + halfFOV)
 
     if(v1Moved > this.#FOV) {
-
 
       const v1MovedAngle: number = normalize360(v1Moved - this.#FOV)
 

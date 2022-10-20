@@ -12,9 +12,9 @@ export default class WADLoader {
 
   wadBuffer: Buffer = Buffer.alloc(1)
 
-  wadType: string = ''
-  directoryEntries: number = 0
-  directoryOffset: number = 0
+  wadType = ''
+  directoryEntries = 0
+  directoryOffset = 0
 
   wadDirectories: WADDirectory[] = []
   
@@ -120,36 +120,36 @@ export default class WADLoader {
 
     for(let i = mapIndex; i <= finalLumpIdx; i++ ) {
       switch(this.wadDirectories[i].lumpName) {
-        case 'THINGS':
-          map.idx_THINGS = i
-          break
-        case 'LINEDEFS':
-          map.idx_LINEDEFS = i
-          break
-        case 'SIDEDEFS':
-          map.idx_SIDEDEFS = i
-          break
-        case 'VERTEXES':
-          map.idx_VERTEXES = i
-          break
-        case 'SEGS':
-          map.idx_SEGS = i
-          break
-        case 'SSECTORS':
-          map.idx_SSECTORS = i
-          break
-        case 'NODES':
-          map.idx_NODES = i
-          break
-        case 'SECTORS':
-          map.idx_SECTORS = i
-          break
-        case 'REJECT':
-          map.idx_REJECT = i
-          break
-        case 'BLOCKMAP':
-          map.idx_BLOCKMAP = i
-          break
+      case 'THINGS':
+        map.idx_THINGS = i
+        break
+      case 'LINEDEFS':
+        map.idx_LINEDEFS = i
+        break
+      case 'SIDEDEFS':
+        map.idx_SIDEDEFS = i
+        break
+      case 'VERTEXES':
+        map.idx_VERTEXES = i
+        break
+      case 'SEGS':
+        map.idx_SEGS = i
+        break
+      case 'SSECTORS':
+        map.idx_SSECTORS = i
+        break
+      case 'NODES':
+        map.idx_NODES = i
+        break
+      case 'SECTORS':
+        map.idx_SECTORS = i
+        break
+      case 'REJECT':
+        map.idx_REJECT = i
+        break
+      case 'BLOCKMAP':
+        map.idx_BLOCKMAP = i
+        break
       }
     }
 

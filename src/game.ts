@@ -4,10 +4,9 @@ export default class Game {
 
   #DoomEngine: Engine
 
-  constructor(wadFilepath: string = './DOOM.WAD', mapName: string = 'E1M1') {
+  constructor(wadFilepath = './DOOM.WAD', mapName = 'E1M1') {
     this.#DoomEngine = new Engine(wadFilepath, mapName)
   }
-
 
   init(): void {
     try {
@@ -24,11 +23,11 @@ export default class Game {
   }
 
   update(): void {
-
+    //TODO
   }
 
   delay(): void {
-
+    //TODO
   }
 
   isOver(): boolean {

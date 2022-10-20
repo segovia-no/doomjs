@@ -1,5 +1,5 @@
-import { Linedef, Vertex, Thing, Node, SubSector, Seg } from "./interfaces/map.interface"
-import { WADDirectory, WADHeader } from "./interfaces/wadLoader.interface"
+import { Linedef, Vertex, Thing, Node, SubSector, Seg } from './interfaces/map.interface'
+import { WADDirectory, WADHeader } from './interfaces/wadLoader.interface'
 
 export default class WADParser {
 
@@ -15,7 +15,7 @@ export default class WADParser {
     return {
       lumpOffset: wadBuffer.readUInt32LE(directoryOffset + dirIndex*16),
       lumpSize: wadBuffer.readUInt32LE(directoryOffset + dirIndex*16 + 4),
-      lumpName: wadBuffer.toString('utf8', directoryOffset + dirIndex*16 + 8, directoryOffset + dirIndex*16 + 16).replace(/\x00/g, "")
+      lumpName: wadBuffer.toString('utf8', directoryOffset + dirIndex*16 + 8, directoryOffset + dirIndex*16 + 16).replace(/\x00/g, '')
     }
   }
 

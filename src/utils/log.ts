@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 
-export function logMapLumpData(lump: Object[], lumpName: string, mapName: string, amount: number = 5) {
+export function logMapLumpData(lump: Record<string, any>, lumpName: string, mapName: string, amount = 5) {
 
   console.log(`${mapName} - ${lumpName} dump | showing: ${amount}/${lump.length}`)
 
@@ -23,7 +23,7 @@ export function logMapLumpData(lump: Object[], lumpName: string, mapName: string
 
 }
 
-export function dumpMapLumpDataToFile(lump: Object[], lumpName: string, mapName: string): boolean {
+export function dumpMapLumpDataToFile(lump: Record<string, any>, lumpName: string, mapName: string): boolean {
   try {
 
     const filename = `${lumpName} - ${mapName}.csv`

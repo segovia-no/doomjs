@@ -1,15 +1,15 @@
-import { Linedef, Vertex, AutomapLines, Thing, Node, SubSector, Seg } from "./interfaces/map.interface"
+import { Linedef, Vertex, AutomapLines, Thing, Node, SubSector, Seg } from './interfaces/map.interface'
 import Player from './player'
 import { dumpMapLumpDataToFile, logMapLumpData } from './utils/log'
 
 import { scaleBetween } from './utils/math'
-import ViewRenderer from "./viewRenderer"
+import ViewRenderer from './viewRenderer'
 
-const SUBSECTORIDENTIFIER: number = 0x8000
+const SUBSECTORIDENTIFIER = 0x8000
 
 export default class Map {
 
-  #m_Name: string = ''
+  #m_Name = ''
   #m_Vertexes: Vertex[] = []
   #m_Linedefs: Linedef[] = []
   #m_Things: Thing[] = []
@@ -25,41 +25,41 @@ export default class Map {
   player1: Player = new Player(0,0,0)
 
   //indexes of directory
-  idx_THINGS: number = 1
-  idx_LINEDEFS: number = 0
-  idx_SIDEDEFS: number = 0
-  idx_VERTEXES: number = 0
-  idx_SEGS: number = 0
-  idx_SSECTORS: number = 0
-  idx_NODES: number = 0
-  idx_SECTORS: number = 0
-  idx_REJECT: number = 0
-  idx_BLOCKMAP: number = 0
+  idx_THINGS = 1
+  idx_LINEDEFS = 0
+  idx_SIDEDEFS = 0
+  idx_VERTEXES = 0
+  idx_SEGS = 0
+  idx_SSECTORS = 0
+  idx_NODES = 0
+  idx_SECTORS = 0
+  idx_REJECT = 0
+  idx_BLOCKMAP = 0
 
   //automap
-  #enableAutomap: boolean = false
-  automap_scaleFactor: number = 0.9
-  #automapStartX: number = 0
-  #automapStartY: number = 0
-  #automapEndX: number = 0
-  #automapEndY: number = 0
+  #enableAutomap = false
+  automap_scaleFactor = 0.9
+  #automapStartX = 0
+  #automapStartY = 0
+  #automapEndX = 0
+  #automapEndY = 0
 
   automap_lines: AutomapLines[] = []
-  vertexes_Xmin: number = 32767
-  vertexes_Xmax: number = -32768
-  vertexes_Ymin: number = 32767
-  vertexes_Ymax: number = -32768
+  vertexes_Xmin = 32767
+  vertexes_Xmax = -32768
+  vertexes_Ymin = 32767
+  vertexes_Ymax = -32768
 
   //bsp tree
-  renderCurrentBSPNode: boolean = false
-  #debugBSPTraverse: boolean = false
+  renderCurrentBSPNode = false
+  #debugBSPTraverse = false
   #debugBSPPath: number[] = []
-  #debugBSPZoomDepth: number = 0
+  #debugBSPZoomDepth = 0
 
   //Sectors
-  #debugSSectorAnimation: number = 0
-  #ssectorAnimationTick: number = 0
-  #ssectorAnimationIdx: number = 0
+  #debugSSectorAnimation = 0
+  #ssectorAnimationTick = 0
+  #ssectorAnimationIdx = 0
   #ssectorAnimationStepIdx: any[] = []
   
   constructor(mapName: string, viewRenderer: ViewRenderer) {
@@ -114,9 +114,9 @@ export default class Map {
 
       //player setup
       switch(thing.type) {
-        case 1:
-          this.player1 = new Player(thing.xPosition, thing.yPosition, thing.angle, 1)
-          break
+      case 1:
+        this.player1 = new Player(thing.xPosition, thing.yPosition, thing.angle, 1)
+        break
       }
 
     })
@@ -236,7 +236,7 @@ export default class Map {
     this.traverseBSPNode(this.#m_Nodes.length - 1)
   }
 
-  traverseBSPNode(nodeIdx: number, debugDepthIdx: number = 0): void {
+  traverseBSPNode(nodeIdx: number, debugDepthIdx = 0): void {
 
     //render player subsector
     if(nodeIdx & SUBSECTORIDENTIFIER) {
@@ -275,7 +275,7 @@ export default class Map {
   }
 
   //Sectors, Subsectors, Segs
-  renderSeg(seg: Seg, color: string = 'ff0000'): void {
+  renderSeg(seg: Seg, color = 'ff0000'): void {
 
     const vStart: Vertex = this.#m_Vertexes[seg.startVertex]
     const vEnd: Vertex = this.#m_Vertexes[seg.endVertex]
@@ -297,7 +297,7 @@ export default class Map {
 
   }
 
-  renderSegsFromSubSector(subsectorId: number, color: string = 'ff0000'): void {
+  renderSegsFromSubSector(subsectorId: number, color = 'ff0000'): void {
 
     if(this.#debugSSectorAnimation !== 1) return
   
@@ -401,19 +401,19 @@ export default class Map {
   toggleDebugSSectorAnimation(): void {
 
     switch(this.#debugSSectorAnimation) {
-      case 0:
-        this.#debugSSectorAnimation++
-        break
-      case 1:
-        this.#debugSSectorAnimation++
-        break
-      case 2:
-        this.#debugSSectorAnimation++
-        this.#ssectorAnimationIdx = 0
-        this.#ssectorAnimationStepIdx = []
-        break
-      case 3:
-        this.#debugSSectorAnimation = 0
+    case 0:
+      this.#debugSSectorAnimation++
+      break
+    case 1:
+      this.#debugSSectorAnimation++
+      break
+    case 2:
+      this.#debugSSectorAnimation++
+      this.#ssectorAnimationIdx = 0
+      this.#ssectorAnimationStepIdx = []
+      break
+    case 3:
+      this.#debugSSectorAnimation = 0
     }
 
   }
@@ -440,7 +440,7 @@ export default class Map {
   printMapInfo(): void {
 
     console.log(`Map name: ${this.#m_Name}`)
-    console.log(`-----------------`)
+    console.log('-----------------')
 
     console.log(`# Vertexes: ${this.#m_Vertexes.length}`)
     console.log(`# Linedefs: ${this.#m_Linedefs.length}`)

@@ -3,11 +3,8 @@ export function scaleBetween(unscaledNum: number, minAllowed: number, maxAllowed
 }
 
 export function normalize360(angle: number): number {
-  
   angle = angle % 360
-  if(angle < 0) {
-    angle += 360
-  }
+  angle = (angle < 0) ? angle + 360 : angle
 
   return angle
 }

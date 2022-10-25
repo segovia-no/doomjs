@@ -41,6 +41,7 @@
                 "after": true
             }
         ],
+        "space-before-blocks": "error",
         "no-control-regex": 0
     }
 }

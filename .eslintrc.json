@@ -34,6 +34,13 @@
             "error",
             "never"
         ],
+        "keyword-spacing": [
+            "error", 
+            { 
+                "before": true,
+                "after": true
+            }
+        ],
         "no-control-regex": 0
     }
 }

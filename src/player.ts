@@ -70,7 +70,7 @@ export default class Player {
     //check if the seg is facing the same direction as the player
     const v1Tov2Span = normalize360(v1Angle - v2Angle)
 
-    if(v1Tov2Span >= 180) {
+    if (v1Tov2Span >= 180) {
       return false
     }
 
@@ -83,12 +83,12 @@ export default class Player {
     // virtual shifting of v1 to the first quadrant
     const v1Moved = normalize360(v1Angle + halfFOV)
 
-    if(v1Moved > this.#FOV) {
+    if (v1Moved > this.#FOV) {
 
       const v1MovedAngle: number = normalize360(v1Moved - this.#FOV)
 
       // are both V1 and V2 outside the fov
-      if(v1MovedAngle >= v1Tov2Span) {
+      if (v1MovedAngle >= v1Tov2Span) {
         return false
       }
 
@@ -100,7 +100,7 @@ export default class Player {
     //val & clip v2
     const v2Moved = normalize360(halfFOV - v2Angle)
 
-    if(v2Moved > this.#FOV) {
+    if (v2Moved > this.#FOV) {
       v2Angle = v2Angle - halfFOV
     }
 

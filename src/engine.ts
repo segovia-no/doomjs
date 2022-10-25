@@ -55,16 +55,16 @@ export default class Engine {
       this.#context = this.#canvas.getContext('2d')
 
       //pass renderer to dependencies
-      if(!this.map.setContext(this.#context)) throw 'Error: could not set graphics context for map'
-      if(!this.#viewRenderer.setContext(this.#context)) throw 'Error: could not set graphics context for view renderer'
+      if (!this.map.setContext(this.#context)) throw 'Error: could not set graphics context for map'
+      if (!this.#viewRenderer.setContext(this.#context)) throw 'Error: could not set graphics context for view renderer'
 
       //load data
-      if(!this.#wadLoader.loadWAD()) throw 'Error: could not load the WAD file'
-      if(!this.#wadLoader.loadMapData(this.map)) throw 'Error: could not load the map data'
+      if (!this.#wadLoader.loadWAD()) throw 'Error: could not load the WAD file'
+      if (!this.#wadLoader.loadMapData(this.map)) throw 'Error: could not load the map data'
 
       //init rendering
-      if(!this.map.initAutomap(this.#windowWidth, this.#windowHeight)) throw `Error: Failed to initialize automap of map ${this.map.getName()}`
-      if(!this.#viewRenderer.initFrame()) throw 'Error: Failed to initialize frame (Solid wall clipping)'
+      if (!this.map.initAutomap(this.#windowWidth, this.#windowHeight)) throw `Error: Failed to initialize automap of map ${this.map.getName()}`
+      if (!this.#viewRenderer.initFrame()) throw 'Error: Failed to initialize frame (Solid wall clipping)'
 
       return true
 
@@ -76,14 +76,14 @@ export default class Engine {
 
   gameLoop() {
     
-    if(this.isOver) {
+    if (this.isOver) {
       this.#sdlWindow.destroy()
       return
     }
 
     const now = Date.now()
 
-    if(this.#lastTic + this.tickLength <= now) {
+    if (this.#lastTic + this.tickLength <= now) {
 
       this.#lastTic = now
 
@@ -93,7 +93,7 @@ export default class Engine {
     }
 
 
-    if(Date.now() - this.#lastTic < this.tickLength - 16) {
+    if (Date.now() - this.#lastTic < this.tickLength - 16) {
       setTimeout(this.gameLoop.bind(this))
     } else {
       setImmediate(this.gameLoop.bind(this))
@@ -122,7 +122,7 @@ export default class Engine {
 
   initInputsListeners(): void {
     this.#sdlWindow.on('keyDown', (ev: any) => {
-      switch(ev.key) {
+      switch (ev.key) {
       case '+' :
         this.map.zoomAutomap(true)
         this.map.initAutomap(this.#windowWidth, this.#windowHeight)

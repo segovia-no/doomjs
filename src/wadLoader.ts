@@ -29,9 +29,9 @@ export default class WADLoader {
   //Opening methods
   loadWAD(): boolean {
 
-    if(!this.openAndLoad()) return false
+    if (!this.openAndLoad()) return false
 
-    if(!this.readDirectories()) return false
+    if (!this.readDirectories()) return false
 
     return true
 
@@ -41,7 +41,7 @@ export default class WADLoader {
   openAndLoad(): boolean {
     try {
 
-      if(this.filepath == '') throw 'Cannot load WAD: No WAD filename specified'
+      if (this.filepath == '') throw 'Cannot load WAD: No WAD filename specified'
 
       const openedWAD = fs.openSync(this.filepath, 'r')
       const wadData = fs.readFileSync(openedWAD)
@@ -66,9 +66,9 @@ export default class WADLoader {
   readDirectories(): boolean {
     try {
 
-      if(!this.wadBuffer) throw 'Cannot read WAD directories: theres no WAD buffer'
+      if (!this.wadBuffer) throw 'Cannot read WAD directories: theres no WAD buffer'
     
-      for(let i = 0; i < this.directoryEntries; i++) {
+      for (let i = 0; i < this.directoryEntries; i++) {
         this.wadDirectories.push(this.wadParser.readDirectoryData(this.wadBuffer, this.directoryOffset, i))
       }
 
@@ -85,19 +85,19 @@ export default class WADLoader {
   loadMapData(map: Map): boolean {
     try {
 
-      if(!this.setMapLumpsIndexes(map)) throw `Error: Failed to set lumps indexes of map ${map.getName()}`
+      if (!this.setMapLumpsIndexes(map)) throw `Error: Failed to set lumps indexes of map ${map.getName()}`
 
-      if(!this.readMapVertexes(map)) throw `Error: Failed to load vertexes of map ${map.getName()}`
+      if (!this.readMapVertexes(map)) throw `Error: Failed to load vertexes of map ${map.getName()}`
 
-      if(!this.readMapLinedefs(map)) throw `Error: Failed to load linedefs of map ${map.getName()}`
+      if (!this.readMapLinedefs(map)) throw `Error: Failed to load linedefs of map ${map.getName()}`
 
-      if(!this.readMapThings(map)) throw `Error: Failed to load things of map ${map.getName()}`
+      if (!this.readMapThings(map)) throw `Error: Failed to load things of map ${map.getName()}`
 
-      if(!this.readMapNodes(map)) throw `Error: Failed to load nodes of map ${map.getName()}`
+      if (!this.readMapNodes(map)) throw `Error: Failed to load nodes of map ${map.getName()}`
 
-      if(!this.readMapSubSectors(map)) throw `Error: Failed to load sectors of map ${map.getName()}`
+      if (!this.readMapSubSectors(map)) throw `Error: Failed to load sectors of map ${map.getName()}`
 
-      if(!this.readMapSegs(map)) throw `Error: Failed to load segs of map ${map.getName()}`
+      if (!this.readMapSegs(map)) throw `Error: Failed to load segs of map ${map.getName()}`
 
       return true
 
@@ -114,12 +114,12 @@ export default class WADLoader {
   setMapLumpsIndexes(map: Map): boolean {
 
     const mapIndex: number = this.findMapIndex(map)
-    if(mapIndex == -1) return false
+    if (mapIndex == -1) return false
 
     const finalLumpIdx = mapIndex + 10
 
-    for(let i = mapIndex; i <= finalLumpIdx; i++ ) {
-      switch(this.wadDirectories[i].lumpName) {
+    for (let i = mapIndex; i <= finalLumpIdx; i++ ) {
+      switch (this.wadDirectories[i].lumpName) {
       case 'THINGS':
         map.idx_THINGS = i
         break
@@ -159,11 +159,11 @@ export default class WADLoader {
 
   readMapVertexes(map: Map): boolean {
 
-    if(map.idx_VERTEXES == 0) return false
+    if (map.idx_VERTEXES == 0) return false
 
     const vertexesCount = this.wadDirectories[map.idx_VERTEXES].lumpSize / 4 // each vertex is 4 bytes long
 
-    for(let i = 0; i < vertexesCount; i++) {
+    for (let i = 0; i < vertexesCount; i++) {
       map.addVertex( this.wadParser.readMapVertexData(this.wadBuffer, this.wadDirectories[map.idx_VERTEXES].lumpOffset + i*4) )
     }
 
@@ -173,11 +173,11 @@ export default class WADLoader {
 
   readMapLinedefs(map: Map): boolean {
 
-    if(map.idx_LINEDEFS == 0) return false
+    if (map.idx_LINEDEFS == 0) return false
 
     const linedefsCount = this.wadDirectories[map.idx_LINEDEFS].lumpSize / 14 // each linedef is 14 bytes long
 
-    for(let i = 0; i < linedefsCount; i++) {
+    for (let i = 0; i < linedefsCount; i++) {
       map.addLinedef( this.wadParser.readMapLinedefData(this.wadBuffer, this.wadDirectories[map.idx_LINEDEFS].lumpOffset + i*14) )
     }
 
@@ -187,15 +187,15 @@ export default class WADLoader {
 
   readMapThings(map: Map): boolean {
 
-    if(map.idx_THINGS == 0) return false
+    if (map.idx_THINGS == 0) return false
 
     const thingsCount = this.wadDirectories[map.idx_THINGS].lumpSize / 10 // each thing is 10 bytes long
 
-    for(let i = 0; i < thingsCount; i++) {
+    for (let i = 0; i < thingsCount; i++) {
       map.addThing( this.wadParser.readMapThingData(this.wadBuffer, this.wadDirectories[map.idx_THINGS].lumpOffset + i*10))
     }
 
-    if(!map.initThings()) return false
+    if (!map.initThings()) return false
 
     return true
 
@@ -203,11 +203,11 @@ export default class WADLoader {
 
   readMapNodes(map: Map): boolean {
 
-    if(map.idx_NODES == 0) return false
+    if (map.idx_NODES == 0) return false
 
     const nodesCount = this.wadDirectories[map.idx_NODES].lumpSize / 28 // each node is 28 bytes long
 
-    for(let i = 0; i < nodesCount; i++) {
+    for (let i = 0; i < nodesCount; i++) {
       map.addNode( this.wadParser.readMapNodeData(this.wadBuffer, this.wadDirectories[map.idx_NODES].lumpOffset + i*28))
     }
 
@@ -217,11 +217,11 @@ export default class WADLoader {
 
   readMapSubSectors(map: Map): boolean {
 
-    if(map.idx_SSECTORS == 0) return false
+    if (map.idx_SSECTORS == 0) return false
 
     const ssecCount = this.wadDirectories[map.idx_SSECTORS].lumpSize / 4 // each sector is 4 bytes long
 
-    for(let i = 0; i < ssecCount; i++) {
+    for (let i = 0; i < ssecCount; i++) {
       map.addSubSector( this.wadParser.readMapSubSectorData(this.wadBuffer, this.wadDirectories[map.idx_SSECTORS].lumpOffset + i*4))
     }
 
@@ -231,11 +231,11 @@ export default class WADLoader {
 
   readMapSegs(map: Map): boolean {
 
-    if(map.idx_SEGS == 0) return false
+    if (map.idx_SEGS == 0) return false
 
     const segsCount = this.wadDirectories[map.idx_SEGS].lumpSize / 12 // each seg is 12 bytes long
 
-    for(let i = 0; i < segsCount; i++) {
+    for (let i = 0; i < segsCount; i++) {
       map.addSeg( this.wadParser.readMapSegData(this.wadBuffer, this.wadDirectories[map.idx_SEGS].lumpOffset + i*12))
     }
 

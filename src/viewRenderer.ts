@@ -22,7 +22,7 @@ export default class ViewRenderer {
 
   setContext(context: any): boolean {
 
-    if(!context.canvas.height) return false
+    if (!context.canvas.height) return false
 
     this.#context = context
     return true
@@ -32,7 +32,7 @@ export default class ViewRenderer {
   angleToScreen(angle: number): number {
     try {
 
-      if(!this.#windowWidth) throw 'Error: no canvas dimensions set'
+      if (!this.#windowWidth) throw 'Error: no canvas dimensions set'
     
       let iX = 0
 
@@ -110,16 +110,16 @@ export default class ViewRenderer {
 
     let foundClipWallIdx = 0
 
-    while(foundClipWallIdx < this.#m_SolidWallRanges.length && this.#m_SolidWallRanges[foundClipWallIdx][1] < currentWall[0]) {
+    while (foundClipWallIdx < this.#m_SolidWallRanges.length && this.#m_SolidWallRanges[foundClipWallIdx][1] < currentWall[0]) {
       foundClipWallIdx++
     }
 
     //Case: update and insert is to the left side of foundClipWallIdx
 
-    if(currentWall[1] < this.#m_SolidWallRanges[foundClipWallIdx][0]) {
+    if (currentWall[1] < this.#m_SolidWallRanges[foundClipWallIdx][0]) {
 
       //is overlapping?
-      if(currentWall[0] < this.#m_SolidWallRanges[foundClipWallIdx][0] - 1) {
+      if (currentWall[0] < this.#m_SolidWallRanges[foundClipWallIdx][0] - 1) {
         //all of wall is visible -> insert
         this.storeWallRange(seg, currentWall[0], currentWall[1])
         this.#m_SolidWallRanges.splice(foundClipWallIdx, 0, currentWall)

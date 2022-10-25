@@ -69,7 +69,7 @@ export default class Map {
 
   setContext(context: any): boolean {
 
-    if(!context.canvas.height) return false
+    if (!context.canvas.height) return false
 
     this.#context = context
     return true
@@ -108,12 +108,12 @@ export default class Map {
 
   initThings(): boolean {
 
-    if(this.#m_Things.length < 1) return false
+    if (this.#m_Things.length < 1) return false
 
     this.#m_Things.forEach(thing => {
 
       //player setup
-      switch(thing.type) {
+      switch (thing.type) {
       case 1:
         this.player1 = new Player(thing.xPosition, thing.yPosition, thing.angle, 1)
         break
@@ -164,7 +164,7 @@ export default class Map {
   //map render pipeline
   render(): void {
 
-    if(this.#enableAutomap){
+    if (this.#enableAutomap){
       this.renderAutoMapWalls()
       this.renderAutoMapPlayer()
       this.renderBSPTree()
@@ -177,7 +177,7 @@ export default class Map {
 
   renderAutoMapWalls(): void {
 
-    if(this.#debugSSectorAnimation !== 0) return
+    if (this.#debugSSectorAnimation !== 0) return
 
     this.#context.strokeStyle = '#ffffff'
 
@@ -207,7 +207,7 @@ export default class Map {
 
   renderAutoMapNode(nodeIdx: number): void {
 
-    if(this.#m_Nodes.length < 1) return
+    if (this.#m_Nodes.length < 1) return
 
     const node = this.#m_Nodes[nodeIdx]
 
@@ -239,9 +239,9 @@ export default class Map {
   traverseBSPNode(nodeIdx: number, debugDepthIdx = 0): void {
 
     //render player subsector
-    if(nodeIdx & SUBSECTORIDENTIFIER) {
+    if (nodeIdx & SUBSECTORIDENTIFIER) {
 
-      if(this.#debugSSectorAnimation !== 0) return
+      if (this.#debugSSectorAnimation !== 0) return
 
       this.renderSegsFromSubSector(nodeIdx & ~SUBSECTORIDENTIFIER)
       return
@@ -249,15 +249,15 @@ export default class Map {
     }
 
     //render bsp node childs
-    if(this.#debugBSPTraverse) {
+    if (this.#debugBSPTraverse) {
 
       this.#debugBSPPath[debugDepthIdx] = nodeIdx
 
-      if(nodeIdx & SUBSECTORIDENTIFIER) { //if this is the last node, "end" the array
+      if (nodeIdx & SUBSECTORIDENTIFIER) { //if this is the last node, "end" the array
         this.#debugBSPPath.slice(debugDepthIdx + 1)
       }
 
-      if(this.#debugBSPPath[this.#debugBSPZoomDepth] === nodeIdx) {
+      if (this.#debugBSPPath[this.#debugBSPZoomDepth] === nodeIdx) {
         this.renderAutoMapNode(nodeIdx)
       }
 
@@ -266,7 +266,7 @@ export default class Map {
     //recursion
     const isOnLeft = this.isPointOnLeftSide(this.player1.getXPosition(), this.player1.getYPosition(), nodeIdx)
 
-    if(isOnLeft) {
+    if (isOnLeft) {
       this.traverseBSPNode(this.#m_Nodes[nodeIdx].leftChildIdx, debugDepthIdx + 1)
     } else {
       this.traverseBSPNode(this.#m_Nodes[nodeIdx].rightChildIdx, debugDepthIdx + 1)
@@ -299,11 +299,11 @@ export default class Map {
 
   renderSegsFromSubSector(subsectorId: number, color = 'ff0000'): void {
 
-    if(this.#debugSSectorAnimation !== 1) return
+    if (this.#debugSSectorAnimation !== 1) return
   
     const sector = this.#m_SSectors[subsectorId]
 
-    for(let i = 0; i < sector.segCount; i++) {
+    for (let i = 0; i < sector.segCount; i++) {
       this.renderSeg(this.#m_Segs[sector.firstSegIdx + i], color)
     }
 
@@ -311,21 +311,21 @@ export default class Map {
 
   renderSegsInFOV() {
 
-    for(let i = 0; i < this.#m_Segs.length; i++) {
+    for (let i = 0; i < this.#m_Segs.length; i++) {
 
       const vStart = this.#m_Vertexes[this.#m_Segs[i].startVertex]
       const vEnd   = this.#m_Vertexes[this.#m_Segs[i].endVertex]
 
-      if(this.player1.clipVertexesInFOV(vStart, vEnd)) {
+      if (this.player1.clipVertexesInFOV(vStart, vEnd)) {
 
         const v1x = this.player1.vertexToAngle(vStart)
         const v2x = this.player1.vertexToAngle(vEnd)
 
-        if(this.#m_Linedefs[this.#m_Segs[i].linedefIdx].leftSidedef !== 0xFFFF) {
+        if (this.#m_Linedefs[this.#m_Segs[i].linedefIdx].leftSidedef !== 0xFFFF) {
           this.#viewRenderer.addWallinFOV(v1x, v2x)
         }
         
-        if(this.#debugSSectorAnimation == 3 && this.#enableAutomap) {
+        if (this.#debugSSectorAnimation == 3 && this.#enableAutomap) {
           this.renderSeg(this.#m_Segs[i])
         }
 
@@ -337,19 +337,19 @@ export default class Map {
 
   animateRenderSSegs(): void {
 
-    if(this.#debugSSectorAnimation !== 1) return
+    if (this.#debugSSectorAnimation !== 1) return
 
     //render already generated ssectors
-    for(let i = 0; i < this.#ssectorAnimationStepIdx.length; i++) {
+    for (let i = 0; i < this.#ssectorAnimationStepIdx.length; i++) {
       this.renderSegsFromSubSector(this.#ssectorAnimationStepIdx[i][0], `#${this.#ssectorAnimationStepIdx[i][1]}`)
     }
 
-    if(this.#m_SSectors.length == this.#ssectorAnimationIdx) return
+    if (this.#m_SSectors.length == this.#ssectorAnimationIdx) return
 
     //generate new ssector
-    if(this.#ssectorAnimationTick >= 1) {
+    if (this.#ssectorAnimationTick >= 1) {
 
-      if(this.#m_SSectors.length == this.#ssectorAnimationIdx) return
+      if (this.#m_SSectors.length == this.#ssectorAnimationIdx) return
 
       const randomColor = Math.floor(Math.random()*16777215).toString(16)
         
@@ -366,7 +366,7 @@ export default class Map {
 
   //Options
   zoomAutomap(zoomIn: boolean): void {
-    if(zoomIn) {
+    if (zoomIn) {
       this.automap_scaleFactor += 0.01
     } else {
       this.automap_scaleFactor -= 0.01
@@ -383,16 +383,16 @@ export default class Map {
 
   zoomBSPTraverseDepth(zoomIn: boolean): void {
 
-    if(!this.#debugBSPTraverse) return
+    if (!this.#debugBSPTraverse) return
 
-    if(zoomIn) {
+    if (zoomIn) {
 
-      if(!this.#debugBSPPath[this.#debugBSPZoomDepth +1]) return
+      if (!this.#debugBSPPath[this.#debugBSPZoomDepth +1]) return
       this.#debugBSPZoomDepth++
 
     } else {
 
-      if(this.#debugBSPZoomDepth === 0) return
+      if (this.#debugBSPZoomDepth === 0) return
       this.#debugBSPZoomDepth--
       
     }
@@ -400,7 +400,7 @@ export default class Map {
 
   toggleDebugSSectorAnimation(): void {
 
-    switch(this.#debugSSectorAnimation) {
+    switch (this.#debugSSectorAnimation) {
     case 0:
       this.#debugSSectorAnimation++
       break

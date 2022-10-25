@@ -75,6 +75,11 @@ export default class Engine {
   }
 
   gameLoop() {
+    
+    if(this.isOver) {
+      this.#sdlWindow.destroy()
+      return
+    }
 
     const now = Date.now()
 
@@ -87,21 +92,12 @@ export default class Engine {
       
     }
 
+
     if(Date.now() - this.#lastTic < this.tickLength - 16) {
-
-      if(!this.isOver) {
-        setTimeout(this.gameLoop.bind(this))
-      }
-
+      setTimeout(this.gameLoop.bind(this))
     } else {
-
-      if(!this.isOver) {
-        setImmediate(this.gameLoop.bind(this))
-      }
-
+      setImmediate(this.gameLoop.bind(this))
     }
-
-    if(this.isOver) this.#sdlWindow.destroy()
 
   }
 
@@ -157,7 +153,7 @@ export default class Engine {
         this.map.toggleAutomap()
         break
       case 'escape':
-        this.isOver = true
+        this.quit()
         break
       }
     })
@@ -165,7 +161,7 @@ export default class Engine {
   }
 
   quit(): void {
-    this.isOver = false
+    this.isOver = true
   }
 
   clearScreen() {

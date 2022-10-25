@@ -6,13 +6,13 @@ export function logMapLumpData(lump: Record<string, any>, lumpName: string, mapN
 
   const keys = Object.keys(lump[0])
 
-  for(let i = 0; i < amount; i++) {
+  for (let i = 0; i < amount; i++) {
 
     const values = Object.values(lump[i])
 
     let finalString = ''
 
-    for(let j = 0; j < values.length; j++) {
+    for (let j = 0; j < values.length; j++) {
       finalString = finalString + `${keys[j]}: ${values[j]}, `
     }
 
@@ -28,7 +28,7 @@ export function dumpMapLumpDataToFile(lump: Record<string, any>, lumpName: strin
 
     const filename = `${lumpName} - ${mapName}.csv`
 
-    if(fs.existsSync(filename)) {
+    if (fs.existsSync(filename)) {
       fs.unlinkSync(filename)
     }
 
@@ -36,7 +36,7 @@ export function dumpMapLumpDataToFile(lump: Record<string, any>, lumpName: strin
 
     fs.appendFileSync(filename, `${keys}\n`)
 
-    for(let i = 0; i < lump.length; i++) {
+    for (let i = 0; i < lump.length; i++) {
 
       const values = Object.values(lump[i]).join()
       
@@ -48,7 +48,7 @@ export function dumpMapLumpDataToFile(lump: Record<string, any>, lumpName: strin
 
     return true
 
-  } catch(e) {
+  } catch (e) {
     console.error(e)
     return false
   }

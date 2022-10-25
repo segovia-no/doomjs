@@ -164,7 +164,7 @@ export default class Map {
   //map render pipeline
   render(): void {
 
-    if (this.#enableAutomap){
+    if (this.#enableAutomap) {
       this.renderAutoMapWalls()
       this.renderAutoMapPlayer()
       this.renderBSPTree()
